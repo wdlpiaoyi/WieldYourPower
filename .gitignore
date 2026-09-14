@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+build/
+
+# Forge run directory
+run/
+
+# Third-party reference material (copyright / study only, never distributed)
+Reference/
+
+# Local libs (e.g. Cloth Config jar)
+libs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.eclipse/
+.settings/
+.classpath
+.project
+
+# OS
+Thumbs.db
+.DS_Store

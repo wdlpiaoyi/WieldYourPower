@@ -1,0 +1,40 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="wieldyourpower"
+version="${mod_version}"
+displayName="WieldYourPower / 力量掌控"
+authors="wdlpiaoyi and deepseek"
+description='''
+WieldYourPower (力量掌控) lets a player limit their own walking and flying speed and cap mining
+speed and interval, and protect chosen allies - all configurable per player.
+
+It also adds operator tools: an enhanced /wyp kill that pierces protection, creative-mode defence,
+entity freezing, an Entity Viewer item to inspect entities and run quick commands, and a server-side
+"author's favor" tag that pack authors can put on a single non-player entity to blunt overpowered atypical damage (setHealth, huge damage, max-health cuts, discard) so endgame items
+cannot delete a boss.
+Every protection feature can be toggled and tuned in the config.
+'''
+
+[[dependencies.wieldyourpower]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.wieldyourpower]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.wieldyourpower]]
+modId="cloth_config"
+mandatory=true
+versionRange="[11,)"
+ordering="NONE"
+side="CLIENT"

@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.wieldyourpower.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "wieldyourpower.refmap.json",
+  "mixins": [
+    "EntityIsRemovedMixin",
+    "EntityOnRemovedFromWorldMixin",
+    "EntityRemoveMixin",
+    "EntitySetPosMixin",
+    "EntitySetRemovedMixin",
+    "LevelGetEntitiesMixin",
+    "LevelGetEntitiesTypeTestMixin",
+    "LivingEntityActuallyHurtMixin",
+    "LivingEntityDropLootMixin",
+    "LivingEntityHurtMixin",
+    "LivingEntityIsDeadOrDyingMixin",
+    "LivingEntitySetHealthMixin",
+    "PlayerListRespawnMixin",
+    "ServerPlayerDieMixin"
+  ],
+  "client": [
+    "LivingEntityJumpMixin",
+    "MinecraftDeathScreenMixin",
+    "ScreenDeathCommandMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
