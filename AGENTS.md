@@ -1,30 +1,38 @@
 # AGENTS.md
 
-Forge 1.20.1 mod `wieldyourpower` (力量掌控). Java 17, official mappings, Forge `1.20.1-47.3.10`, Gradle 8.8 wrapper, daemon disabled. No tests.
+Forge 1.20.1 mod `wieldyourpower` (力量掌控). Java 17, official mappings, Forge `1.20.1-47.3.10`, Gradle 8.8 wrapper, daemon disabled. Ships client + server code.
 
 ## Commands
-- Build: `.\gradlew.bat clean build --console=plain`. `JAVA_HOME` must point at JDK 17.
-- There is no test suite (`src/test` is empty). "Verify" = build succeeds + manual in-game check.
+- Build: `.\gradlew.bat clean build --console=plain` from the repo root. `JAVA_HOME` must point at JDK 17.
+- Dev runs: `.\gradlew.bat runClient` / `runServer` (working directory `run/`).
+- No tests, linter, formatter or typecheck tasks exist (`src/test` has only empty dirs). "Verify" = build succeeds + manual in-game check; do not invent test commands.
 
 ## Version bump (easy to miss)
 Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.VERSION`. Output is `build/libs/wieldyourpower-1.20.1-forge-<ver>.jar`.
 
 ## Build quirks
-- Cloth Config is the only compile dependency, read from `modpackModsDir` (`build.gradle`, default project-relative `libs/`; override with `-PmodpackModsDir=...`). A missing `cloth-config-*.jar` fails the build; runtime also requires Cloth.
+- Cloth Config is the only compile dependency, read from `modpackModsDir` (`build.gradle`, default project-relative `libs/`, which is gitignored; override with `-PmodpackModsDir=...`). The build fails without a `cloth-config-*.jar` there; runtime also requires Cloth.
 - Do not rewrite `gradle.properties`/`.java` with PowerShell `Set-Content -Encoding UTF8` (adds a BOM and breaks compilation); use the edit tools.
 
+## Config
+- Config lives in `WYPConfig` (COMMON) and is surfaced through the Cloth screen (`client/cloth/ClothScreens`, plus the custom `QuickAddEntry` row reused by every list).
+- Filter lists use the comma form `key,value` (a `:` inside an id is kept). Legacy `key:value` is migrated on load (`FilterSyntax.normalizeAll`; `killHonor` via `ConfigMigration`, the ally list on player-NBT load). Write the comma form in new code/UI.
+
+## Networking
+- `WYPNetwork.VERSION` (currently `"2"`) is the channel protocol version; bump it whenever packet fields change so mismatched clients are rejected.
+
 ## Mixins
-- MixinGradle 0.7.38 + Mixin 0.8.5 processor. Config: `src/main/resources/wieldyourpower.mixins.json`; refmap wired via the `mixin { add ...; config ... }` block in `build.gradle`; `MixinConfigs` is also set manually in the jar manifest.
-- `injectors.defaultRequire = 1`: a failed injection crashes at runtime, not at build time. To add a mixin, add the class name to the config's `mixins` list (`package` is `net.wieldyourpower.mixin`).
-- Existing: `LivingEntitySetHealthMixin` rewrites `setHealth` args with `@ModifyVariable` (refmap maps `setHealth -> m_21153_`).
+- MixinGradle 0.7.38 + Mixin 0.8.5 processor. Config: `src/main/resources/wieldyourpower.mixins.json`; refmap wired via the `mixin { add ...; config ... }` block in `build.gradle`; `MixinConfigs` is also set manually in `tasks.jar`.
+- Add new mixins to that config: `mixins` = both sides, `client` = client only (package is `net.wieldyourpower.mixin`).
+- `injectors.defaultRequire = 1`: a failed injection crashes at runtime, not at build time. All current mixins target vanilla; a mixin aimed at an optional third-party class would need its own config with `"required": false` + `"defaultRequire": 0`.
+- Example: `LivingEntitySetHealthMixin` rewrites `setHealth` args with `@ModifyVariable` (refmap maps `setHealth -> m_21153_`).
 
 ## Access transformer
-`src/main/resources/META-INF/accesstransformer.cfg` already exposes what the mod needs (`LivingEntity.die/dead/DATA_HEALTH_ID`, `Entity.unsetRemoved/isAddedToWorld`). Add an entry (SRG names) before writing code that touches other private/package vanilla members.
+`src/main/resources/META-INF/accesstransformer.cfg` currently exposes (SRG names): `LivingEntity.die/dead/DATA_HEALTH_ID/lastHurt`, `Entity.unsetRemoved/isAddedToWorld`. Add an entry before touching other private/package vanilla members.
 
 ## Architecture
-- `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` is the keyword-reflection last resort (default OFF) guarded by an ASM bytecode scan (`ClassSafety`).
+- `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` is the keyword-reflection last resort (default OFF) guarded by an ASM bytecode scan (`ClassSafety`); `util/` holds `FilterSyntax`/`EntityMatcher`/`KillUtil`/`FrozenEntities`/`ForcedRemoval`.
 - Speed limits are client-enforced (`client/ClientEvents`), while kill/freeze/protection are server-authoritative.
-- The JEI/EMI recipe-viewer un-hide feature was moved out to a separate project (`C:\Work\Minecraft\JEMISee-Un-See`); this mod has no JEI/KubeJS integration any more. Do not re-add it here.
 
 ## Hard constraints (project rules)
 - Never edit other mods' files or save data (`SavedData`); prefer generic, non-mod-specific approaches. No per-mod compat code/mixins.
@@ -32,4 +40,4 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 - `/wyp kill` must always bypass protections: gate new protection on `KillUtil.isForceKilling(entity)`.
 - Author's favor (`AuthorsFavorEvents`) coefficients default to "no effect" (`damageCoefficient` 0, `maxHealthCoefficient` 0, `maxHealthChangeCoefficient` 1) on purpose: opt-in per entity for pack authors. Don't "fix" the defaults. Entities are chosen by `authorsFavor.filter` (comma matchers `tag,`/`type,`/`uuid,`, parsed by `EntityMatcher`/`FilterSyntax`). It only touches `setHealth`/`die` calls that bypass the vanilla damage chain; vanilla damage is never modified.
 - Keep `assets/wieldyourpower/lang/en_us.json` and `zh_cn.json` in sync.
-- `Reference/` is extracted reference material for study only; nothing there is compiled or shipped.
+- `Reference/` is extracted third-party material (gitignored, study only); nothing there is compiled or shipped.
