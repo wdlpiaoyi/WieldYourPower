@@ -16,7 +16,7 @@
   "wieldyourpower.tip.speed": "绝对水平动量上限（格/刻）：-1 关闭，0 停止；原版参考 行走≈0.216，疾跑≈0.281，创造飞行≈0.545。",
   "wieldyourpower.tip.jump": "绝对竖直跳跃动量（格/刻）：-1 关闭；原版≈0.42。",
   "wieldyourpower.tip.step": "跨越高度系数（相对原版 0.6）：-1 不限，1 = 原版，0 = 无法跨越。",
-  "wieldyourpower.tip.creativeDefense": "创造玩家不会被其它模组杀死，只有 /wyp kill 可穿透；并附加假死、base value 保护与每 tick 恢复。",
+  "wieldyourpower.tip.creativeDefense": "创造玩家不会被其它模组杀死，只有 /wyp kill 可穿透；不显示死亡界面，拦截 hurt/setHealth 等致死途径，并做 base value 保护与每 tick 恢复。",
   "wieldyourpower.tip.creativeMinHealth": "每 tick 让受保护的创造玩家血量不低于该值。",
   "wieldyourpower.tip.creativeMinMaxHealth": "每 tick 让受保护的创造玩家血上限（base value）不低于该值。",
   "wieldyourpower.tip.creativeHitboxMode": "实验性：把受保护的创造玩家从实体查询中隐藏。默认除「下蹲且着地」外移除受击判定。",

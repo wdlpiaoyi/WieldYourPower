@@ -16,7 +16,7 @@
   "wieldyourpower.tip.speed": "Absolute horizontal momentum cap (blocks/tick): -1 = off, 0 = stop; vanilla walk ~0.216, sprint ~0.281, creative flight ~0.545.",
   "wieldyourpower.tip.jump": "Absolute jump momentum (blocks/tick): -1 = off; vanilla ~0.42.",
   "wieldyourpower.tip.step": "Step height coefficient of the vanilla 0.6: -1 = off, 1 = vanilla, 0 = cannot step up.",
-  "wieldyourpower.tip.creativeDefense": "Creative players can't be killed by other mods; /wyp kill still pierces. Adds fake-death, base-value and per-tick restore.",
+  "wieldyourpower.tip.creativeDefense": "Creative players can't be killed by other mods; /wyp kill still pierces. No death screen; blocks hurt/setHealth and other lethal paths, plus base-value and per-tick restore.",
   "wieldyourpower.tip.creativeMinHealth": "Every tick keep a protected creative player's health at least this high.",
   "wieldyourpower.tip.creativeMinMaxHealth": "Every tick keep a protected creative player's max health (base value) at least this high.",
   "wieldyourpower.tip.creativeHitboxMode": "Experimental: hide the protected creative player from entity lookups. Default removes the hitbox except while sneaking on the ground.",
