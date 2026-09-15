@@ -3,6 +3,7 @@ package net.wieldyourpower.client.cloth;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -79,7 +80,7 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.step"))
                 .setSaveConsumer(text -> extra[1] = parseDouble(text, -1.0D))
                 .build());
-        category.addEntry(entry.startStrList(Component.translatable("wieldyourpower.field.attributes"),
+        StringListListEntry attributeEntry = entry.startStrList(Component.translatable("wieldyourpower.field.attributes"),
                         new java.util.ArrayList<>(ClientLimits.attributeLimits))
                 .setDefaultValue(java.util.List.of())
                 .setTooltip(Component.translatable("wieldyourpower.tip.attribute"))
@@ -87,17 +88,23 @@ public final class ClothScreens {
                     attributes.clear();
                     attributes.addAll(list);
                 })
-                .build());
-        category.addEntry(entry.startStrList(Component.translatable("wieldyourpower.field.ally_protection"),
+                .build();
+        category.addEntry(attributeEntry);
+        category.addEntry(new QuickAddEntry(Component.translatable("wieldyourpower.field.attribute_add"),
+                attributeEntry.getValue(), new String[0], new String[]{"attribute"}));
+        StringListListEntry allyEntry = entry.startStrList(Component.translatable("wieldyourpower.field.ally_protection"),
                         new java.util.ArrayList<>(ClientLimits.allyProtection))
-                .setDefaultValue(java.util.List.of("type:touhou_little_maid:maid"))
+                .setDefaultValue(java.util.List.of("type,touhou_little_maid:maid"))
                 .setExpanded(true)
                 .setTooltip(Component.translatable("wieldyourpower.tip.ally_protection"))
                 .setSaveConsumer(list -> {
                     allies.clear();
                     allies.addAll(list);
                 })
-                .build());
+                .build();
+        category.addEntry(allyEntry);
+        category.addEntry(new QuickAddEntry(Component.translatable("wieldyourpower.field.ally_add"),
+                allyEntry.getValue(), new String[0], new String[]{"tag", "type", "uuid"}));
 
         return builder.build();
     }
@@ -161,14 +168,17 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.bossDespawnCompat"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.bossDespawnCompat.set(value))
                 .build());
-        general.addEntry(entry.startStrList(Component.translatable("wieldyourpower.config.killHonor"),
+        StringListListEntry killHonorEntry = entry.startStrList(Component.translatable("wieldyourpower.config.killHonor"),
                         new java.util.ArrayList<>(WYPConfig.COMMON.killHonor.get()))
-                .setDefaultValue(java.util.List.of("tag:odamaneFinalDeath", "type:minecraft:ender_dragon",
-                        "type:minecraft:wither"))
+                .setDefaultValue(java.util.List.of("tag,odamaneFinalDeath", "type,minecraft:ender_dragon",
+                        "type,minecraft:wither"))
                 .setExpanded(false)
                 .setTooltip(Component.translatable("wieldyourpower.tip.killHonor"))
                 .setSaveConsumer(list -> WYPConfig.COMMON.killHonor.set(list))
-                .build());
+                .build();
+        general.addEntry(killHonorEntry);
+        general.addEntry(new QuickAddEntry(Component.translatable("wieldyourpower.field.killHonor_add"),
+                killHonorEntry.getValue(), new String[0], new String[]{"tag", "type", "uuid"}));
 
         ConfigCategory freeze = builder.getOrCreateCategory(Component.translatable("wieldyourpower.category.freeze"));
         freeze.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.freezeEnabled"),
@@ -232,12 +242,16 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.authorsFavorEnabled"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.authorsFavorEnabled.set(value))
                 .build());
-        favor.addEntry(entry.startStrField(Component.translatable("wieldyourpower.config.authorsFavorTag"),
-                        WYPConfig.COMMON.authorsFavorTag.get())
-                .setDefaultValue("authorsfavor")
-                .setTooltip(Component.translatable("wieldyourpower.tip.authorsFavorTag"))
-                .setSaveConsumer(text -> WYPConfig.COMMON.authorsFavorTag.set(text.trim()))
-                .build());
+        StringListListEntry favorFilterEntry = entry.startStrList(Component.translatable("wieldyourpower.config.authorsFavorFilter"),
+                        new java.util.ArrayList<>(WYPConfig.COMMON.authorsFavorFilter.get()))
+                .setDefaultValue(java.util.List.of("tag,authorsfavor"))
+                .setExpanded(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.authorsFavorFilter"))
+                .setSaveConsumer(list -> WYPConfig.COMMON.authorsFavorFilter.set(list))
+                .build();
+        favor.addEntry(favorFilterEntry);
+        favor.addEntry(new QuickAddEntry(Component.translatable("wieldyourpower.field.authorsFavor_add"),
+                favorFilterEntry.getValue(), new String[0], new String[]{"tag", "type", "uuid"}));
         favor.addEntry(entry.startStrField(Component.translatable("wieldyourpower.config.authorsFavorDamage"),
                         String.valueOf(WYPConfig.COMMON.authorsFavorDamageCoefficient.get()))
                 .setDefaultValue("0")
@@ -282,7 +296,7 @@ public final class ClothScreens {
         WYPConfig.COMMON.entityViewerSelectDrops.save();
         WYPConfig.COMMON.entityViewerCooldown.save();
         WYPConfig.COMMON.authorsFavorEnabled.save();
-        WYPConfig.COMMON.authorsFavorTag.save();
+        WYPConfig.COMMON.authorsFavorFilter.save();
         WYPConfig.COMMON.authorsFavorDamageCoefficient.save();
         WYPConfig.COMMON.authorsFavorMaxHealthCoefficient.save();
         WYPConfig.COMMON.authorsFavorMaxHealthChangeCoefficient.save();

@@ -44,7 +44,7 @@ public interface IPlayerLimits {
 
     void setStepLimit(double value);
 
-    /** Custom attribute caps, one entry per line as {@code attribute:<attribute id>:<max>}. */
+    /** Custom attribute caps, one entry per line as {@code attribute,<attribute id>,<max>}. */
     List<String> getAttributeLimits();
 
     void setAttributeLimits(List<String> entries);

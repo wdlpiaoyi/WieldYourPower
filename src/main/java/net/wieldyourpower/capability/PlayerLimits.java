@@ -25,7 +25,7 @@ public class PlayerLimits implements IPlayerLimits {
     private double jumpLimit = DEFAULT_JUMP;
     private double stepLimit = DEFAULT_STEP;
     private List<String> attributeLimits = new ArrayList<>();
-    private List<String> allyProtection = new ArrayList<>(List.of("type:touhou_little_maid:maid"));
+    private List<String> allyProtection = new ArrayList<>(List.of("type,touhou_little_maid:maid"));
 
     @Override
     public double getWalkSpeedLimit() {
@@ -196,7 +196,8 @@ public class PlayerLimits implements IPlayerLimits {
             for (int i = 0; i < list.size(); i++) {
                 allies.add(list.getString(i));
             }
-            this.allyProtection = allies;
+            // Rewrite legacy key:value entries to the new key,value form.
+            this.allyProtection = net.wieldyourpower.util.FilterSyntax.normalizeAll(allies);
         }
     }
 }

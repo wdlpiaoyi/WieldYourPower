@@ -38,7 +38,7 @@ public final class WYPConfig {
         public final ForgeConfigSpec.BooleanValue bossDespawnCompat;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> killHonor;
         public final ForgeConfigSpec.BooleanValue authorsFavorEnabled;
-        public final ForgeConfigSpec.ConfigValue<String> authorsFavorTag;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> authorsFavorFilter;
         public final ForgeConfigSpec.DoubleValue authorsFavorDamageCoefficient;
         public final ForgeConfigSpec.DoubleValue authorsFavorMaxHealthCoefficient;
         public final ForgeConfigSpec.DoubleValue authorsFavorMaxHealthChangeCoefficient;
@@ -100,13 +100,13 @@ public final class WYPConfig {
 
             this.killHonor = builder
                     .comment("Honor list; each entry declares its own match type with a prefix:",
-                            "  tag:<scoreboard tag>      e.g. tag:odamaneFinalDeath",
-                            "  type:<entity type id>     e.g. type:minecraft:ender_dragon",
-                            "  uuid:<entity uuid>        e.g. uuid:123e4567-e89b-12d3-a456-426614174000",
+                            "  tag,<scoreboard tag>      e.g. tag,odamaneFinalDeath",
+                            "  type,<entity type id>     e.g. type,minecraft:ender_dragon",
+                            "  uuid,<entity uuid>        e.g. uuid,123e4567-e89b-12d3-a456-426614174000",
                             "Matching targets only get a normal death attempt (no forced kill), so other mods",
                             "(e.g. Goety's End Ritual) can take over. Everything else is force-killed.")
                     .defineListAllowEmpty("killHonor",
-                            List.of("tag:odamaneFinalDeath", "type:minecraft:ender_dragon", "type:minecraft:wither"),
+                            List.of("tag,odamaneFinalDeath", "type,minecraft:ender_dragon", "type,minecraft:wither"),
                             value -> value instanceof String);
 
             builder.pop();
@@ -117,12 +117,17 @@ public final class WYPConfig {
                     "Layout: tag / enabled + coefficients.").push("authorsFavor");
 
             this.authorsFavorEnabled = builder
-                    .comment("Enable the author's favor tag protection.")
+                    .comment("Enable the author's favor protection.")
                     .define("enabled", true);
 
-            this.authorsFavorTag = builder
-                    .comment("Scoreboard tag that enables protection on a non-player entity.")
-                    .define("tag", "authorsfavor");
+            this.authorsFavorFilter = builder
+                    .comment("Which non-player entities get the protection, comma-separated matchers",
+                            "(a ':' inside an id is kept as-is):",
+                            "  tag,<scoreboard tag>   e.g. tag,authorsfavor",
+                            "  type,<entity type id>  e.g. type,minecraft:ender_dragon",
+                            "  uuid,<entity uuid>",
+                            "Default keeps the old behaviour: any entity carrying the 'authorsfavor' tag.")
+                    .defineListAllowEmpty("filter", List.of("tag,authorsfavor"), value -> value instanceof String);
 
             this.authorsFavorDamageCoefficient = builder
                     .comment("Only affects a setHealth call that does NOT come from the vanilla damage chain:",
@@ -186,6 +191,7 @@ public final class WYPConfig {
                     .defineInRange("cooldownTicks", 10, 0, 200);
 
             builder.pop();
+
         }
     }
 }

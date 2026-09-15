@@ -173,7 +173,7 @@ public final class WYPCommand {
     }
 
     private static int favor(CommandSourceStack source, Collection<? extends Entity> targets, boolean add) {
-        String tag = WYPConfig.COMMON.authorsFavorTag.get();
+        String tag = net.wieldyourpower.common.AuthorsFavorEvents.primaryTag();
         if (tag.isEmpty()) {
             source.sendFailure(Component.translatable("commands.wieldyourpower.favor.notag"));
             return 0;
@@ -310,7 +310,7 @@ public final class WYPCommand {
             return 0;
         }
         java.util.List<String> updated = new java.util.ArrayList<>();
-        String prefix = "attribute:" + id + ":";
+        String prefix = "attribute," + id + ",";
         for (String entry : limits.getAttributeLimits()) {
             if (entry == null || !entry.startsWith(prefix)) {
                 updated.add(entry);

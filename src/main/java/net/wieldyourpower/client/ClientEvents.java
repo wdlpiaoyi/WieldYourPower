@@ -34,7 +34,7 @@ public final class ClientEvents {
     public static void onLoggingIn(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingIn event) {
         // Start clean; the server (if it has this mod) will sync the player's own limits right after.
         ClientLimits.setAll(-1.0D, -1.0D, -1.0D, 0, 0, -1.0D, -1.0D, java.util.List.of(),
-                java.util.List.of("type:touhou_little_maid:maid"));
+                java.util.List.of("type,touhou_little_maid:maid"));
     }
 
     @SubscribeEvent

@@ -32,7 +32,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - 可选**移除受击判定**（`creativeHitboxMode`，默认下蹲且着地时恢复）。
 
 ### 作者庇护（供整合包作者）
-- 给**单个非玩家实体**加标签即可开启保护（默认标签 `authorsfavor`）。
+- 用**过滤列表**决定哪些**非玩家实体**获得保护，条目为逗号分隔的匹配项：`tag,<标签>` / `type,<实体id>` / `uuid,<uuid>`（id 内自带的 `:` 保留）。默认 `tag,authorsfavor`。
 - 只拦**不走原版伤害链路**的代码：直接 `setHealth(X)`（`X` 低于当前血量）会被改写为 `floor((当前血量 - X) × 系数)`；**负数（含 `-Inf`）等价于 `setHealth(0)`**，同样按变化量算；直接 `die()` 也会被拦截回血。走 `hurt` / `actualHurt` 的伤害（普通武器、OP 武器、生物攻击）一律不动。
 - 另外抗 `discard` / 强制移除 / 异常瞬移（位置与重力会还原）；对生命上限削减按历史最大值软化；并持续显示同名（无实际效果）提示 buff。
 - **所有系数默认「等效不生效」**，需整合包作者按需调整。
@@ -45,6 +45,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - 自带射线检测（不依赖原版触及属性），支持多部件实体（如末影龙）与掉落物。
 
 ### 其他
+- 所有过滤列表（友军 / 武德 / 作者庇护 / attribute）在 Cloth 界面里都有**快捷添加行**（下拉选列表与类型 + 填值 + 添加）。
 - 死亡界面可按 `/` 或 `T` 直接敲指令（便于脱困）。
 - Cloth Config 为**强依赖**，所有配置都在其界面里，且每项都有说明 tooltip。
 
@@ -69,7 +70,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 
 ## 作者庇护用法
 
-用 KubeJS 等工具自行给目标实体加上该标签。也可用指令快捷添加 / 移除：
+用 KubeJS 等工具给目标实体加上标签，或把目标按 `type,` / `uuid,` 写进 `[authorsFavor] filter`。也可用指令快捷添加 / 移除默认标签：
 
 ```
 /wyp favor add [实体]
@@ -80,8 +81,8 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 
 | 键 | 默认 | 说明 |
 | --- | --- | --- |
-| `enabled` | `true` | 是否启用标签保护 |
-| `tag` | `authorsfavor` | 启用保护的计分板标签 |
+| `enabled` | `true` | 是否启用庇护 |
+| `filter` | `["tag,authorsfavor"]` | 逗号分隔的匹配项：`tag,<标签>` / `type,<实体id>` / `uuid,<uuid>` |
 | `damageCoefficient` | `0` | 变化量减免系数（0–1）：新血量 = `floor((当前血量 - X) × 系数)`；负数按 0 算。`0` 不保护，`1` 完全吸收；原版链路伤害不受影响 |
 | `maxHealthCoefficient` | `0` | 生命上限削减的硬地板（相对历史最大值） |
 | `maxHealthChangeCoefficient` | `1` | 生命上限变化量的系数：`1` 全额生效，`0` 忽略削减 |
@@ -93,7 +94,8 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - 需要 JDK 17、Forge `1.20.1-47.3.10`、Gradle 8.8 wrapper。
 - `.\gradlew.bat clean build`
 - 产物：`build/libs/wieldyourpower-1.20.1-forge-<版本>.jar`
-- Cloth Config 为**必需依赖**：构建时从 `modpackModsDir`（`build.gradle` 中定义，可用 `-PmodpackModsDir=...` 覆盖）读取 `cloth-config-*.jar`，缺失则编译失败；运行时也要求安装。
+- 依赖从 `modpackModsDir` 读取（`build.gradle` 中定义，默认项目相对 `libs/`；可用 `-PmodpackModsDir=...` 覆盖）：
+  - **Cloth Config 必需**（缺 `cloth-config-*.jar` 编译失败，运行时也要求）。
 
 ## 许可
 

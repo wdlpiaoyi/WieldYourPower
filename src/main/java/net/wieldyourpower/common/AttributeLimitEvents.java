@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Server-side attribute caps. {@code stepLimit} caps {@code forge:step_height_addition} as a coefficient
- * of the vanilla 0.6, and custom entries {@code attribute:<id>:<max>} cap any attribute. The cap is applied
+ * of the vanilla 0.6, and custom entries {@code attribute,<id>,<max>} cap any attribute. The cap is applied
  * with a transient (never saved) modifier, so the underlying value is never edited.
  */
 @Mod.EventBusSubscriber(modid = WieldYourPower.MODID)
@@ -33,7 +33,6 @@ public final class AttributeLimitEvents {
     private static final UUID STEP_MODIFIER_ID =
             UUID.fromString("b41d9e77-2c53-4a10-8f6d-7a2e5c9b0003");
     private static final double VANILLA_STEP = 0.6D;
-    private static final String PREFIX = "attribute:";
 
     private static final Map<UUID, Map<UUID, Attribute>> APPLIED = new ConcurrentHashMap<>();
 
@@ -139,20 +138,20 @@ public final class AttributeLimitEvents {
     }
 
     private static Attribute parse(String entry, double[] maxHolder) {
-        if (entry == null || !entry.startsWith(PREFIX)) {
+        if (entry == null) {
             return null;
         }
-        String rest = entry.substring(PREFIX.length());
-        int separator = rest.lastIndexOf(':');
-        if (separator <= 0) {
+        // attribute,<attribute id>,<max>  (a ':' inside the id is kept)
+        String[] parts = entry.trim().split(",", 3);
+        if (parts.length < 3 || !parts[0].trim().equalsIgnoreCase("attribute")) {
             return null;
         }
-        ResourceLocation id = ResourceLocation.tryParse(rest.substring(0, separator).trim());
+        ResourceLocation id = ResourceLocation.tryParse(parts[1].trim());
         if (id == null) {
             return null;
         }
         try {
-            maxHolder[0] = Double.parseDouble(rest.substring(separator + 1).trim());
+            maxHolder[0] = Double.parseDouble(parts[2].trim());
         } catch (RuntimeException exception) {
             return null;
         }

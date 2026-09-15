@@ -17,6 +17,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.wieldyourpower.WYPConfig;
 import net.wieldyourpower.WieldYourPower;
 import net.wieldyourpower.effect.ModEffects;
+import net.wieldyourpower.util.EntityMatcher;
+import net.wieldyourpower.util.FilterSyntax;
 import net.wieldyourpower.util.KillUtil;
 
 import java.util.Map;
@@ -66,12 +68,22 @@ public final class AuthorsFavorEvents {
         if (!(entity instanceof LivingEntity) || entity instanceof Player) {
             return false;
         }
-        // Cheapest discriminator first: the scoreboard tag. Almost every entity fails here.
-        String tag = WYPConfig.COMMON.authorsFavorTag.get();
-        if (tag.isEmpty() || !entity.getTags().contains(tag)) {
+        if (!WYPConfig.COMMON.authorsFavorEnabled.get()) {
             return false;
         }
-        return WYPConfig.COMMON.authorsFavorEnabled.get() && !KillUtil.isForceKilling(entity);
+        return EntityMatcher.matches(WYPConfig.COMMON.authorsFavorFilter.get(), entity)
+                && !KillUtil.isForceKilling(entity);
+    }
+
+    /** The scoreboard tag the /wyp favor command adds, taken from the first {@code tag,} filter entry. */
+    public static String primaryTag() {
+        for (String raw : WYPConfig.COMMON.authorsFavorFilter.get()) {
+            String[] parts = FilterSyntax.entityKeyValue(raw);
+            if (parts != null && parts[0].equals("tag")) {
+                return parts[1];
+            }
+        }
+        return "authorsfavor";
     }
 
     /**

@@ -10,7 +10,7 @@ Forge 1.20.1 mod `wieldyourpower` (力量掌控). Java 17, official mappings, Fo
 Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.VERSION`. Output is `build/libs/wieldyourpower-1.20.1-forge-<ver>.jar`.
 
 ## Build quirks
-- Cloth Config is a **required** compile dependency read from `modpackModsDir` (`build.gradle`, default project-relative `libs/`; override with `-PmodpackModsDir=...`). A missing `cloth-config-*.jar` fails the build; runtime also requires Cloth.
+- Cloth Config is the only compile dependency, read from `modpackModsDir` (`build.gradle`, default project-relative `libs/`; override with `-PmodpackModsDir=...`). A missing `cloth-config-*.jar` fails the build; runtime also requires Cloth.
 - Do not rewrite `gradle.properties`/`.java` with PowerShell `Set-Content -Encoding UTF8` (adds a BOM and breaks compilation); use the edit tools.
 
 ## Mixins
@@ -24,11 +24,12 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 ## Architecture
 - `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` is the keyword-reflection last resort (default OFF) guarded by an ASM bytecode scan (`ClassSafety`).
 - Speed limits are client-enforced (`client/ClientEvents`), while kill/freeze/protection are server-authoritative.
+- The JEI/EMI recipe-viewer un-hide feature was moved out to a separate project (`C:\Work\Minecraft\JEMISee-Un-See`); this mod has no JEI/KubeJS integration any more. Do not re-add it here.
 
 ## Hard constraints (project rules)
 - Never edit other mods' files or save data (`SavedData`); prefer generic, non-mod-specific approaches. No per-mod compat code/mixins.
 - Stay within normal Java/Forge reach: events, Mixin method-body injection, access transformer. Do NOT use launch plugins, ASM class transformers, reflection into modlauncher internals, or `Unsafe`. (Some mods do; those are out of scope for this mod even when they make it lose.)
 - `/wyp kill` must always bypass protections: gate new protection on `KillUtil.isForceKilling(entity)`.
-- Author's favor (`AuthorsFavorEvents`) coefficients default to "no effect" (`damageCoefficient` 0, `maxHealthCoefficient` 0, `maxHealthChangeCoefficient` 1) on purpose: opt-in per entity for pack authors. Don't "fix" the defaults. It only touches `setHealth`/`die` calls that bypass the vanilla damage chain; vanilla damage is never modified.
+- Author's favor (`AuthorsFavorEvents`) coefficients default to "no effect" (`damageCoefficient` 0, `maxHealthCoefficient` 0, `maxHealthChangeCoefficient` 1) on purpose: opt-in per entity for pack authors. Don't "fix" the defaults. Entities are chosen by `authorsFavor.filter` (comma matchers `tag,`/`type,`/`uuid,`, parsed by `EntityMatcher`/`FilterSyntax`). It only touches `setHealth`/`die` calls that bypass the vanilla damage chain; vanilla damage is never modified.
 - Keep `assets/wieldyourpower/lang/en_us.json` and `zh_cn.json` in sync.
 - `Reference/` is extracted reference material for study only; nothing there is compiled or shipped.

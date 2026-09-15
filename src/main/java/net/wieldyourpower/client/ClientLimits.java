@@ -21,7 +21,7 @@ public final class ClientLimits {
     public static double jumpLimit = -1.0D;
     public static double stepLimit = -1.0D;
     public static List<String> attributeLimits = new ArrayList<>();
-    public static List<String> allyProtection = new ArrayList<>(List.of("type:touhou_little_maid:maid"));
+    public static List<String> allyProtection = new ArrayList<>(List.of("type,touhou_little_maid:maid"));
 
     private ClientLimits() {
     }

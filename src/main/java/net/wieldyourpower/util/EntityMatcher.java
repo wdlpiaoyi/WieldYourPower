@@ -3,20 +3,20 @@ package net.wieldyourpower.util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.wieldyourpower.WYPConfig;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
- * Matches configurable entity entries. Every entry declares its own match type:
+ * Matches configurable entity entries. Every entry declares its own match type, comma-separated (a colon
+ * inside a value such as an entity id is kept as-is):
  * <pre>
- *   tag:&lt;scoreboard tag&gt;
- *   type:&lt;entity type id&gt;
- *   uuid:&lt;entity uuid&gt;
+ *   tag,&lt;scoreboard tag&gt;
+ *   type,&lt;entity type id&gt;      e.g. type,minecraft:ender_dragon
+ *   uuid,&lt;entity uuid&gt;
  * </pre>
- * A bare entry (no prefix) is tried as both a scoreboard tag and an entity type id.
+ * A bare entry (no key) is tried as both a scoreboard tag and an entity type id. The legacy
+ * {@code key:value} form is still accepted.
  */
 public final class EntityMatcher {
 
@@ -32,44 +32,39 @@ public final class EntityMatcher {
             return false;
         }
         for (String raw : entries) {
-            if (raw == null) {
-                continue;
-            }
-            String entry = raw.trim();
+            String entry = raw == null ? "" : raw.trim();
             if (entry.isEmpty()) {
                 continue;
             }
-            int separator = entry.indexOf(':');
-            String key = separator < 0 ? "" : entry.substring(0, separator).trim().toLowerCase(Locale.ROOT);
-            String value = separator < 0 ? entry : entry.substring(separator + 1).trim();
-            if (value.isEmpty()) {
+            String[] parts = FilterSyntax.entityKeyValue(entry);
+            if (parts != null) {
+                switch (parts[0]) {
+                    case "tag":
+                        if (entity.getTags().contains(parts[1])) {
+                            return true;
+                        }
+                        break;
+                    case "uuid":
+                        if (entity.getStringUUID().equalsIgnoreCase(parts[1])) {
+                            return true;
+                        }
+                        break;
+                    case "type":
+                        if (matchesType(entity, parts[1])) {
+                            return true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 continue;
             }
-
-            switch (key) {
-                case "tag":
-                    if (entity instanceof Player player && player.getTags().contains(value)) {
-                        return true;
-                    }
-                    break;
-                case "uuid":
-                    if (entity.getStringUUID().equalsIgnoreCase(value)) {
-                        return true;
-                    }
-                    break;
-                case "type":
-                    if (matchesType(entity, value)) {
-                        return true;
-                    }
-                    break;
-                default:
-                    if (entity instanceof Player player && player.getTags().contains(entry)) {
-                        return true;
-                    }
-                    if (matchesType(entity, entry)) {
-                        return true;
-                    }
-                    break;
+            // Bare entry: try as a scoreboard tag and as an entity type id.
+            if (entity.getTags().contains(entry)) {
+                return true;
+            }
+            if (matchesType(entity, entry)) {
+                return true;
             }
         }
         return false;
