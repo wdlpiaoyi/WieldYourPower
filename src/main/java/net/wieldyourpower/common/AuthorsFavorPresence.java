@@ -95,7 +95,7 @@ public final class AuthorsFavorPresence {
         try {
             for (Class<?> type = entity.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
                 for (Field field : type.getDeclaredFields()) {
-                    if (field.getType() != ServerBossEvent.class) {
+                    if (!ServerBossEvent.class.isAssignableFrom(field.getType())) {
                         continue;
                     }
                     field.setAccessible(true);
