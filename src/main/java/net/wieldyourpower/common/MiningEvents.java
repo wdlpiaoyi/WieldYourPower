@@ -77,6 +77,31 @@ public final class MiningEvents {
             event.setCanceled(true);
             return;
         }
-        LAST_BREAK.put(id, now);
+        noteBreak(player);
+    }
+
+    /**
+     * True while the player's own mining limits are in effect: a non-default {@code mineSpeed} (mining
+     * forbidden when negative, a speed cap when positive) or a {@code mineInterval} window that has not
+     * elapsed yet. Other features use this to defer to the player's self-imposed limits.
+     */
+    public static boolean miningLimitActive(Player player) {
+        IPlayerLimits limits = ModCapabilities.resolve(player);
+        if (limits == null) {
+            return false;
+        }
+        if (limits.getMineSpeedLimit() != 0) {
+            return true;
+        }
+        int interval = limits.getMineInterval();
+        if (interval <= 0) {
+            return false;
+        }
+        Long last = LAST_BREAK.get(player.getUUID());
+        return last != null && player.level().getGameTime() - last < interval;
+    }
+
+    public static void noteBreak(Player player) {
+        LAST_BREAK.put(player.getUUID(), player.level().getGameTime());
     }
 }

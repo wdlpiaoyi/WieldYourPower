@@ -4,8 +4,10 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
@@ -58,6 +60,72 @@ final class ClassSafety {
             }
         }
         return true;
+    }
+
+    /**
+     * Method-level variant: scan only the given method's own bytecode. Used for tiny toggle methods on
+     * classes that legitimately use reflection elsewhere (a whole-class scan would reject them).
+     */
+    static boolean isMethodSafe(Method method) {
+        if (method == null) {
+            return false;
+        }
+        Class<?> owner = method.getDeclaringClass();
+        try (InputStream stream = owner.getResourceAsStream("/" + owner.getName().replace('.', '/') + ".class")) {
+            if (stream == null) {
+                return false;
+            }
+            String targetName = method.getName();
+            String targetDesc = Type.getMethodDescriptor(method);
+            boolean[] safe = { true };
+            ClassReader reader = new ClassReader(stream);
+            reader.accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String descriptor,
+                                                 String signature, String[] exceptions) {
+                    if (!name.equals(targetName) || !descriptor.equals(targetDesc)) {
+                        return null;
+                    }
+                    if ((access & Opcodes.ACC_NATIVE) != 0) {
+                        safe[0] = false;
+                        return null;
+                    }
+                    return new MethodVisitor(Opcodes.ASM9) {
+                        @Override
+                        public void visitMethodInsn(int opcode, String owner, String methodName,
+                                                    String methodDescriptor, boolean isInterface) {
+                            if (dangerousCall(owner, methodName)) {
+                                safe[0] = false;
+                            }
+                        }
+
+                        @Override
+                        public void visitFieldInsn(int opcode, String owner, String fieldName, String fieldDescriptor) {
+                            if (dangerousOwner(owner)) {
+                                safe[0] = false;
+                            }
+                        }
+
+                        @Override
+                        public void visitTypeInsn(int opcode, String type) {
+                            if (dangerousOwner(type)) {
+                                safe[0] = false;
+                            }
+                        }
+
+                        @Override
+                        public void visitLdcInsn(Object value) {
+                            if (value instanceof String text && looksLikeFilePath(text)) {
+                                safe[0] = false;
+                            }
+                        }
+                    };
+                }
+            }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            return safe[0];
+        } catch (Throwable throwable) {
+            return false;
+        }
     }
 
     private static Class<?> tryLoad(String dottedName, ClassLoader loader) {

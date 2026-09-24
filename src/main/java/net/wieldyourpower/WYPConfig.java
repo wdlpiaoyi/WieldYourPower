@@ -32,6 +32,9 @@ public final class WYPConfig {
         public final ForgeConfigSpec.DoubleValue creativeMinHealth;
         public final ForgeConfigSpec.DoubleValue creativeMinMaxHealth;
         public final ForgeConfigSpec.EnumValue<HitboxMode> creativeHitboxMode;
+        public final ForgeConfigSpec.BooleanValue creativeBreaksProtectedBlocks;
+        public final ForgeConfigSpec.BooleanValue blockBreakerEnabled;
+        public final ForgeConfigSpec.BooleanValue blockProtectionBypass;
         public final ForgeConfigSpec.BooleanValue killPiercesProtection;
         public final ForgeConfigSpec.BooleanValue killForceRemoval;
         public final ForgeConfigSpec.BooleanValue killClearBossBars;
@@ -75,6 +78,23 @@ public final class WYPConfig {
                             "HIDE_ONLY_SNEAK_GROUND: inverse of the above.",
                             "NEVER_HIDE / ALWAYS_HIDE: unconditional.")
                     .defineEnum("creativeHitboxMode", HitboxMode.REMOVE_UNLESS_SNEAK_GROUND);
+
+            this.creativeBreaksProtectedBlocks = builder
+                    .comment("Let creative players break blocks other mods protect or forbid.",
+                            "Respects this mod's own mining self-limits; ignores every other protection.")
+                    .define("creativeBreaksProtectedBlocks", true);
+
+            this.blockBreakerEnabled = builder
+                    .comment("Enable the admin Block Breaker item. Right-click a block to force-remove it,",
+                            "bypassing this mod's self-limits and every other protection.")
+                    .define("blockBreakerEnabled", true);
+
+            this.blockProtectionBypass = builder
+                    .comment("Keyword-driven bypass for third-party block-protection switches.",
+                            "Scans every loaded mod for a static *bypass*(boolean) method on a protection/guard",
+                            "class (method bytecode safety-scanned) and toggles it around a forced removal.",
+                            "No-op when no such switch is present.")
+                    .define("blockProtectionBypass", true);
 
             this.killPiercesProtection = builder
                     .comment("Make the enhanced kill command pierce invulnerability, totems and event cancellation.")

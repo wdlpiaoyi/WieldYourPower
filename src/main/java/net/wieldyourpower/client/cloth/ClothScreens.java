@@ -57,7 +57,7 @@ public final class ClothScreens {
                 .build());
         category.addEntry(entry.startStrField(Component.translatable("wieldyourpower.field.fly_v"), format(ClientLimits.flySpeedVertical))
                 .setDefaultValue("-1")
-                .setTooltip(Component.translatable("wieldyourpower.tip.speed"))
+                .setTooltip(Component.translatable("wieldyourpower.tip.fly_v"))
                 .setSaveConsumer(text -> speeds[2] = parseDouble(text, -1.0D))
                 .build());
         category.addEntry(entry.startStrField(Component.translatable("wieldyourpower.field.mine_speed"), String.valueOf(ClientLimits.mineSpeed))
@@ -143,6 +143,24 @@ public final class ClothScreens {
                 .setDefaultValue(WYPConfig.HitboxMode.REMOVE_UNLESS_SNEAK_GROUND)
                 .setTooltip(Component.translatable("wieldyourpower.tip.creativeHitboxMode"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.creativeHitboxMode.set(value))
+                .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.creativeBreaksProtectedBlocks"),
+                        WYPConfig.COMMON.creativeBreaksProtectedBlocks.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.creativeBreaksProtectedBlocks"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.creativeBreaksProtectedBlocks.set(value))
+                .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.blockBreakerEnabled"),
+                        WYPConfig.COMMON.blockBreakerEnabled.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.blockBreakerEnabled"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.blockBreakerEnabled.set(value))
+                .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.blockProtectionBypass"),
+                        WYPConfig.COMMON.blockProtectionBypass.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.blockProtectionBypass"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.blockProtectionBypass.set(value))
                 .build());
         general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.killPierces"),
                         WYPConfig.COMMON.killPiercesProtection.get())
@@ -282,6 +300,9 @@ public final class ClothScreens {
         WYPConfig.COMMON.creativeMinHealth.save();
         WYPConfig.COMMON.creativeMinMaxHealth.save();
         WYPConfig.COMMON.creativeHitboxMode.save();
+        WYPConfig.COMMON.creativeBreaksProtectedBlocks.save();
+        WYPConfig.COMMON.blockBreakerEnabled.save();
+        WYPConfig.COMMON.blockProtectionBypass.save();
         WYPConfig.COMMON.killPiercesProtection.save();
         WYPConfig.COMMON.killForceRemoval.save();
         WYPConfig.COMMON.killClearBossBars.save();

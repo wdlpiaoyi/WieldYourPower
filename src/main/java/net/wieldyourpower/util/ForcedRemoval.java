@@ -42,6 +42,8 @@ public final class ForcedRemoval {
             // Never rip a player out of the level/entity manager: it breaks the death screen and respawn.
             return;
         }
+        // Refuse any later addFreshEntity so a revival cannot undo the removal.
+        RemovalGuard.mark(entity);
         if (entity.level() instanceof ServerLevel serverLevel) {
             removeFromServer(serverLevel, entity);
         }

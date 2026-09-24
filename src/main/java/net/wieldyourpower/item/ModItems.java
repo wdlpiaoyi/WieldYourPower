@@ -15,6 +15,9 @@ public final class ModItems {
     public static final RegistryObject<Item> ENTITY_VIEWER =
             ITEMS.register("entity_viewer", EntityViewerItem::new);
 
+    public static final RegistryObject<Item> BLOCK_BREAKER =
+            ITEMS.register("block_breaker", BlockBreakerItem::new);
+
     private ModItems() {
     }
 

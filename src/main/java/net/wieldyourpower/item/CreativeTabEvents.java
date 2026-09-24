@@ -19,6 +19,7 @@ public final class CreativeTabEvents {
     public static void onBuildTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.OP_BLOCKS) {
             event.accept(ModItems.ENTITY_VIEWER.get());
+            event.accept(ModItems.BLOCK_BREAKER.get());
         }
     }
 }
