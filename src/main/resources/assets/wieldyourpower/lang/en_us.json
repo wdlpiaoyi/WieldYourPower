@@ -51,6 +51,8 @@
   "wieldyourpower.config.creativeBreaksProtectedBlocks": "Creative breaks protected blocks",
   "wieldyourpower.config.blockBreakerEnabled": "Block Breaker enabled",
   "wieldyourpower.tip.creativeBreaksProtectedBlocks": "Creative players can break blocks other mods protect or forbid. Respects this mod's own mining self-limits; ignores every other protection.",
+  "wieldyourpower.config.creativePlacesBlocks": "Creative places blocked blocks",
+  "wieldyourpower.tip.creativePlacesBlocks": "Lets creative players place blocks that other mods forbid placing (cancelled placement events are released). Only placement with a block item in hand is affected.",
   "wieldyourpower.tip.blockBreakerEnabled": "Enable the admin Block Breaker item: right-click a block to force-remove it, bypassing self-limits and other protections.",
   "wieldyourpower.config.blockProtectionBypass": "Block protection bypass (keyword)",
   "wieldyourpower.tip.blockProtectionBypass": "Keyword-driven: scans every loaded mod for a static *bypass*(boolean) method on a protection/guard class and toggles it while force-breaking. No-op when none is present.",

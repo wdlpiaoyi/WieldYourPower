@@ -51,6 +51,8 @@
   "wieldyourpower.config.creativeBreaksProtectedBlocks": "创造击破受保护方块",
   "wieldyourpower.config.blockBreakerEnabled": "启用方块破坏器",
   "wieldyourpower.tip.creativeBreaksProtectedBlocks": "创造玩家可击破其它模组保护或禁止破坏的方块。尊重本模组的挖掘自我限制，无视其它一切保护。",
+  "wieldyourpower.config.creativePlacesBlocks": "创造放置受阻方块",
+  "wieldyourpower.tip.creativePlacesBlocks": "让创造玩家可放置其它模组禁止放置的方块（放开被取消的放置事件）。仅影响手持方块物品的放置，不影响开箱子等交互。",
   "wieldyourpower.tip.blockBreakerEnabled": "启用管理员物品「方块破坏器」：右键方块强制移除，无视自我限制与其它保护。",
   "wieldyourpower.config.blockProtectionBypass": "方块保护绕过（关键词）",
   "wieldyourpower.tip.blockProtectionBypass": "关键词式：扫描所有已加载模组，找到 protection/guard 类上的静态 *bypass*(boolean) 方法（方法字节码安全扫描）并在强制破坏期间切换它。找不到时为空操作。",

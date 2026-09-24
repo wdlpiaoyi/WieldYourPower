@@ -150,6 +150,12 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.creativeBreaksProtectedBlocks"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.creativeBreaksProtectedBlocks.set(value))
                 .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.creativePlacesBlocks"),
+                        WYPConfig.COMMON.creativePlacesBlocks.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.creativePlacesBlocks"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.creativePlacesBlocks.set(value))
+                .build());
         general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.blockBreakerEnabled"),
                         WYPConfig.COMMON.blockBreakerEnabled.get())
                 .setDefaultValue(true)
@@ -301,6 +307,7 @@ public final class ClothScreens {
         WYPConfig.COMMON.creativeMinMaxHealth.save();
         WYPConfig.COMMON.creativeHitboxMode.save();
         WYPConfig.COMMON.creativeBreaksProtectedBlocks.save();
+        WYPConfig.COMMON.creativePlacesBlocks.save();
         WYPConfig.COMMON.blockBreakerEnabled.save();
         WYPConfig.COMMON.blockProtectionBypass.save();
         WYPConfig.COMMON.killPiercesProtection.save();

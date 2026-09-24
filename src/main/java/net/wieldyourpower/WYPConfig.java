@@ -33,6 +33,7 @@ public final class WYPConfig {
         public final ForgeConfigSpec.DoubleValue creativeMinMaxHealth;
         public final ForgeConfigSpec.EnumValue<HitboxMode> creativeHitboxMode;
         public final ForgeConfigSpec.BooleanValue creativeBreaksProtectedBlocks;
+        public final ForgeConfigSpec.BooleanValue creativePlacesBlocks;
         public final ForgeConfigSpec.BooleanValue blockBreakerEnabled;
         public final ForgeConfigSpec.BooleanValue blockProtectionBypass;
         public final ForgeConfigSpec.BooleanValue killPiercesProtection;
@@ -83,6 +84,12 @@ public final class WYPConfig {
                     .comment("Let creative players break blocks other mods protect or forbid.",
                             "Respects this mod's own mining self-limits; ignores every other protection.")
                     .define("creativeBreaksProtectedBlocks", true);
+
+            this.creativePlacesBlocks = builder
+                    .comment("Let creative players place blocks that other mods forbid placing",
+                            "(cancelled placement events are released). Only placement with a block item",
+                            "in hand is affected.")
+                    .define("creativePlacesBlocks", true);
 
             this.blockBreakerEnabled = builder
                     .comment("Enable the admin Block Breaker item. Right-click a block to force-remove it,",
