@@ -11,10 +11,12 @@ description='''
 WieldYourPower (力量掌控) lets a player limit their own walking and flying speed and cap mining
 speed and interval, and protect chosen allies - all configurable per player.
 
-It also adds operator tools: an enhanced /wyp kill that pierces protection, creative-mode defence,
-entity freezing, an Entity Viewer item to inspect entities and run quick commands, and a server-side
-"author's favor" tag that pack authors can put on a single non-player entity to blunt overpowered atypical damage (setHealth, huge damage, max-health cuts, discard) so endgame items
-cannot delete a boss.
+It also adds operator tools: an enhanced /wyp kill that pierces protection and stops mobs that revive
+after removal, creative-mode defence (creative players can also break blocks other mods protect),
+entity freezing, an Entity Viewer item to inspect entities and run quick commands, a Block Breaker
+item that force-removes any block, and a server-side "author's favor" tag that pack authors can put
+on a single non-player entity to blunt overpowered atypical damage (setHealth, huge damage,
+max-health cuts, discard) so endgame items cannot delete a boss.
 Every protection feature can be toggled and tuned in the config.
 '''
 

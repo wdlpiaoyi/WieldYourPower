@@ -17,6 +17,7 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 ## Config
 - Config lives in `WYPConfig` (COMMON) and is surfaced through the Cloth screen (`client/cloth/ClothScreens`, plus the custom `QuickAddEntry` row reused by every list).
 - Filter lists use the comma form `key,value` (a `:` inside an id is kept). Legacy `key:value` is migrated on load (`FilterSyntax.normalizeAll`; `killHonor` via `ConfigMigration`, the ally list on player-NBT load). Write the comma form in new code/UI.
+- Other general toggles: `creativeBreaksProtectedBlocks` (creative may break blocks other mods protect), `blockBreakerEnabled` (admin Block Breaker item), `blockProtectionBypass` (keyword-driven third-party block-protection switch).
 
 ## Networking
 - `WYPNetwork.VERSION` (currently `"2"`) is the channel protocol version; bump it whenever packet fields change so mismatched clients are rejected.
@@ -31,12 +32,13 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 `src/main/resources/META-INF/accesstransformer.cfg` currently exposes (SRG names): `LivingEntity.die/dead/DATA_HEALTH_ID/lastHurt`, `Entity.unsetRemoved/isAddedToWorld`. Add an entry before touching other private/package vanilla members.
 
 ## Architecture
-- `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` is the keyword-reflection last resort (default OFF) guarded by an ASM bytecode scan (`ClassSafety`); `util/` holds `FilterSyntax`/`EntityMatcher`/`KillUtil`/`FrozenEntities`/`ForcedRemoval`.
+- `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` holds the keyword-reflection helpers guarded by the ASM bytecode scans in `ClassSafety` (`BossDespawnCompat` default OFF; `BlockProtectionBypass`, which toggles a third-party block-protection switch, default ON); `util/` holds `FilterSyntax`/`EntityMatcher`/`KillUtil`/`FrozenEntities`/`ForcedRemoval`/`RemovalGuard`/`ForceBlockBreak`.
 - Speed limits are client-enforced (`client/ClientEvents`), while kill/freeze/protection are server-authoritative.
 
 ## Hard constraints (project rules)
 - Never edit other mods' files or save data (`SavedData`); prefer generic, non-mod-specific approaches. No per-mod compat code/mixins.
 - Stay within normal Java/Forge reach: events, Mixin method-body injection, access transformer. Do NOT use launch plugins, ASM class transformers, reflection into modlauncher internals, or `Unsafe`. (Some mods do; those are out of scope for this mod even when they make it lose.)
+- `BlockProtectionBypass` must stay keyword-driven: it names no mod/class, only scans loaded mods for a static `*bypass*(boolean)` switch and checks that method's bytecode via `ClassSafety.isMethodSafe`. Do not hardcode a mod's class there.
 - `/wyp kill` must always bypass protections: gate new protection on `KillUtil.isForceKilling(entity)`.
 - Author's favor (`AuthorsFavorEvents`) coefficients default to "no effect" (`damageCoefficient` 0, `maxHealthCoefficient` 0, `maxHealthChangeCoefficient` 1) on purpose: opt-in per entity for pack authors. Don't "fix" the defaults. Entities are chosen by `authorsFavor.filter` (comma matchers `tag,`/`type,`/`uuid,`, parsed by `EntityMatcher`/`FilterSyntax`). It only touches `setHealth`/`die` calls that bypass the vanilla damage chain; vanilla damage is never modified.
 - Keep `assets/wieldyourpower/lang/en_us.json` and `zh_cn.json` in sync.
