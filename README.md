@@ -16,12 +16,12 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - **跨越高度**：原版 `0.6` 的系数（`-1` 不限，`1` 原版，`0` 无法跨越）。
 - **挖掘**：破坏方块所需最少刻数（`-1` 禁止挖掘）与两次破坏间的冷却刻数。
 - **自定义 attribute 上限**：每玩家一组 `attribute:<属性id>:<上限>`，服务端每 tick 用临时修饰符钳制（不改底层数值）。
-- **友军防护**：只拦截 `source.getEntity() instanceof Player` 的伤害，按 `tag:` / `type:` / `uuid:` 匹配（默认 `type:touhou_little_maid:maid`）。
+- **友军防护**：只拦截 `source.getEntity() instanceof Player` 的伤害，按 `tag,` / `type,` / `uuid,` 匹配（默认给出一条示例条目，可在配置里改）。
 - 打开面板：按键（默认未绑定，需自行设置）或 `/wyp panel`；使用 Cloth Config 界面。
 
 ### 击杀
 - `/wyp kill`：增强击杀，无视无敌、图腾、事件取消、`discard`，对硬扛者强制移除，并清除残留血条；对玩家可强制重生，补刀绕过复活拦截。
-- **永久移除**：对"移除后靠 `addFreshEntity` 自我复活"的怪物（例如某些测试假人），会拒绝其重新加入世界，击杀真正落地（按实体实例判定，不受 UUID 改动影响）。
+- **永久移除**：对"移除后靠 `addFreshEntity` 自我复活"的怪物，会拒绝其重新加入世界，击杀真正落地（按实体实例判定，不受 UUID 改动影响）。
 - `/wyp killhonor`：只走普通死亡流程的变体（不做强制移除）。
 - **武德** `killHonor`：命中的目标只走一次普通死亡，交给其它模组接管（默认末影龙、凋灵、`tag:odamaneFinalDeath`）。
 - **Boss 反清场兼容**（`bossDespawnCompat`，默认关闭）：关键字反射调用目标的清理逻辑，带字节码安全扫描，仅信任整合包时开启。
@@ -46,7 +46,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - 自带射线检测（不依赖原版触及属性），支持多部件实体（如末影龙）与掉落物。
 
 ### 创造击破与方块破坏器
-- **创造击破受保护方块**：创造玩家左键即可破坏其它模组保护/禁止破坏的方块（如加固传送石、不可破坏祭坛、黑曜石箱子）；本模组的挖掘自我限制仍然生效（`mineSpeed`/`mineInterval` 有设置时不介入）。配置项 `creativeBreaksProtectedBlocks`。
+- **创造击破受保护方块**：创造玩家左键即可破坏其它模组保护或禁止破坏的方块；本模组的挖掘自我限制仍然生效（`mineSpeed`/`mineInterval` 有设置时不介入）。配置项 `creativeBreaksProtectedBlocks`。
 - **方块破坏器**（管理员物品，创造模式「操作员实用物品」标签页）：右键方块强制移除，并**屏蔽该方块自身的右键交互**（祭坛/容器界面、放置等），无视自我限制与其它保护。配置项 `blockBreakerEnabled`。
 - 二者在移除期间会切换第三方模组的方块保护开关（按关键词扫描已加载模组找静态 `*bypass*(boolean)` 开关 + 方法字节码安全扫描，代码中不指名任何模组；默认开 `blockProtectionBypass`，找不到则退回普通移除）。
 - 破坏遵循原版创造行为：**容器内容物掉落、方块物品不掉落**。
@@ -77,7 +77,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 
 ## 作者庇护用法
 
-用 KubeJS 等工具给目标实体加上标签，或把目标按 `type,` / `uuid,` 写进 `[authorsFavor] filter`。也可用指令快捷添加 / 移除默认标签：
+给目标实体加上计分板标签（用整合包脚本 / 数据包），或把目标按 `type,` / `uuid,` 写进 `[authorsFavor] filter`。也可用指令快捷添加 / 移除默认标签：
 
 ```
 /wyp favor add [实体]
