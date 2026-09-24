@@ -102,8 +102,18 @@ public final class AuthorsFavorEvents {
      * (e.g. MoreAvaritia's InfinityGodSword forced removal). The tick undo stays as a fallback.
      */
     public static boolean shouldResistRemoval(Entity entity, Entity.RemovalReason reason) {
-        return (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED)
-                && isFavored(entity);
+        if (reason != Entity.RemovalReason.KILLED && reason != Entity.RemovalReason.DISCARDED) {
+            return false;
+        }
+        if (!isFavored(entity)) {
+            return false;
+        }
+        // Let a real death finish: blocking the removal of a dying entity makes custom death
+        // animations loop forever.
+        if (entity instanceof LivingEntity living && living.isDeadOrDying()) {
+            return false;
+        }
+        return true;
     }
 
     /**

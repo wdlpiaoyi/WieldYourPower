@@ -34,7 +34,7 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 ## Architecture
 - `capability/` = per-player self-limits (`IPlayerLimits`, UUID fallback); `network/` syncs them; `command/` registers `/wyp`; `common/*Events` are Forge event subscribers; `client/` enforces movement/mining client-side; `compat/` holds the keyword-reflection helpers guarded by the ASM bytecode scans in `ClassSafety` (`BossDespawnCompat` default OFF; `BlockProtectionBypass`, which toggles a third-party block-protection switch, default ON); `util/` holds `FilterSyntax`/`EntityMatcher`/`KillUtil`/`FrozenEntities`/`ForcedRemoval`/`RemovalGuard`/`ForceBlockBreak`.
 - Speed limits are client-enforced (`client/ClientEvents`), while kill/freeze/protection are server-authoritative.
-- `common/AuthorsFavorPresence` keeps a strong reference to favored entities and re-adds them if they vanish from the level, guarding against reflective "deep removal" that bypasses `remove`/`setRemoved`. `BlockProtectionEvents` only force-breaks blocks vanilla cannot break (`getDestroySpeed < 0`), so multi-block breakers (vein miners) are left alone.
+- `common/AuthorsFavorPresence` keeps a strong reference to favored entities and re-adds them if they vanish from the level, guarding against reflective "deep removal" that bypasses `remove`/`setRemoved`. `BlockProtectionEvents` only force-breaks blocks vanilla cannot break (`getDestroyProgress <= 0`), so multi-block breakers (vein miners) are left alone.
 
 ## Hard constraints (project rules)
 - Never edit other mods' files or save data (`SavedData`); prefer generic, non-mod-specific approaches. No per-mod compat code/mixins.

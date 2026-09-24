@@ -17,9 +17,10 @@ import net.wieldyourpower.util.ForceBlockBreak;
  * <p>Respects this mod's own mining self-limits (any active {@code mineSpeed} value or an active
  * {@code mineInterval} window disables the bypass) but ignores every other protection.</p>
  *
- * <p>It only steps in when the break would fail, detected via {@code getDestroySpeed < 0}. Breaking
- * every clicked block instead runs before multi-block breakers (vein miners and similar) and swallows
- * them.</p>
+ * <p>It only steps in when the break would fail, detected via {@code getDestroyProgress <= 0}. This
+ * covers {@code strength(-1)} blocks and blocks whose destroy progress is overridden to a non-positive
+ * value. Breaking every clicked block instead runs before multi-block breakers (vein miners and
+ * similar) and swallows them.</p>
  */
 @Mod.EventBusSubscriber(modid = WieldYourPower.MODID)
 public final class BlockProtectionEvents {
@@ -41,7 +42,7 @@ public final class BlockProtectionEvents {
             return;
         }
         BlockState state = level.getBlockState(event.getPos());
-        if (state.isAir() || state.getDestroySpeed(level, event.getPos()) >= 0.0F) {
+        if (state.isAir() || state.getDestroyProgress(player, level, event.getPos()) > 0.0F) {
             return;
         }
         if (ForceBlockBreak.breakBlock(level, event.getPos(), player, false)) {
