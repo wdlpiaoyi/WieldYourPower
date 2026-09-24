@@ -269,8 +269,11 @@ public final class AuthorsFavorEvents {
         softenMaxHealthCut(entity, state);
 
         // Undo a direct health write that bypassed setHealth (InfinityUtils.forceSetHealth writes the
-        // synced DATA_HEALTH_ID itself, then drops loot). Only while protection is actually enabled.
-        if (coefficient() > 0.0F && !state.deathAllowed && entity.getHealth() <= 0.0F) {
+        // synced DATA_HEALTH_ID itself, then drops loot). Only while protection is actually enabled and
+        // only before a death sequence has started: once the entity is dying we must let the death
+        // finish, otherwise a scripted boss death animation gets revived forever.
+        if (coefficient() > 0.0F && !state.deathAllowed && !entity.dead && entity.deathTime == 0
+                && entity.getHealth() <= 0.0F) {
             float maxHealth = entity.getMaxHealth();
             float before = state.lastHealth > 0.0F ? state.lastHealth : maxHealth;
             float restored = Math.max(1.0F, mitigate(before, 0.0F, coefficient()));
