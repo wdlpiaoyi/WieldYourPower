@@ -234,6 +234,8 @@ public final class AuthorsFavorEvents {
             return;
         }
 
+        AuthorsFavorPresence.track(entity);
+
         State state = state(entity);
 
         if (state.deathAllowed) {
