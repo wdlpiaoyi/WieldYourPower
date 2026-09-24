@@ -16,7 +16,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - **跨越高度**：原版 `0.6` 的系数（`-1` 不限，`1` 原版，`0` 无法跨越）。
 - **挖掘**：破坏方块所需最少刻数（`-1` 禁止挖掘）与两次破坏间的冷却刻数。
 - **自定义 attribute 上限**：每玩家一组 `attribute:<属性id>:<上限>`，服务端每 tick 用临时修饰符钳制（不改底层数值）。
-- **友军防护**：只拦截 `source.getEntity() instanceof Player` 的伤害，按 `tag,` / `type,` / `uuid,` 匹配（默认给出一条示例条目，可在配置里改）。
+- **友军防护**：只拦截 `source.getEntity() instanceof Player` 的伤害，按 `tag:` / `type:` / `uuid:` 匹配（默认 `type:touhou_little_maid:maid`）。
 - 打开面板：按键（默认未绑定，需自行设置）或 `/wyp panel`；使用 Cloth Config 界面。
 
 ### 击杀
@@ -46,9 +46,9 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - 自带射线检测（不依赖原版触及属性），支持多部件实体（如末影龙）与掉落物。
 
 ### 创造击破与方块破坏器
-- **创造击破受保护方块**：创造玩家左键即可破坏其它模组保护或禁止破坏的方块；本模组的挖掘自我限制仍然生效（`mineSpeed`/`mineInterval` 有设置时不介入）。配置项 `creativeBreaksProtectedBlocks`。
-- **方块破坏器**（管理员物品，创造模式「操作员实用物品」标签页）：右键方块强制移除，并**屏蔽该方块自身的右键交互**（方块自带的交互界面、放置等），无视自我限制与其它保护。配置项 `blockBreakerEnabled`。
-- 二者在移除期间会切换第三方模组的方块保护开关（按关键词扫描已加载模组找静态 `*bypass*(boolean)` 开关 + 方法字节码安全扫描，代码中不指名任何模组；默认开 `blockProtectionBypass`，找不到则退回普通移除）。
+- **创造击破**：创造玩家左键即可破坏那些通常难以破坏的方块；本模组的挖掘自我限制仍然生效（`mineSpeed`/`mineInterval` 有设置时不介入）。配置项 `creativeBreaksProtectedBlocks`。
+- **方块破坏器**（管理员物品，创造模式「操作员实用物品」标签页）：右键方块强制移除，并**屏蔽该方块自身的右键交互**（自带的交互界面、放置等），无视自我限制。配置项 `blockBreakerEnabled`。
+- 二者依赖一个兼容处理开关 `blockProtectionBypass`（默认开）来让移除在个别特殊方块上生效；该处理是关键词式的，不针对任何特定模组，找不到时自动退回普通移除。
 - 破坏遵循原版创造行为：**容器内容物掉落、方块物品不掉落**。
 
 ### 其他
@@ -77,7 +77,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 
 ## 作者庇护用法
 
-给目标实体加上计分板标签（用整合包脚本 / 数据包），或把目标按 `type,` / `uuid,` 写进 `[authorsFavor] filter`。也可用指令快捷添加 / 移除默认标签：
+用 KubeJS 等工具给目标实体加上标签，或把目标按 `type,` / `uuid,` 写进 `[authorsFavor] filter`。也可用指令快捷添加 / 移除默认标签：
 
 ```
 /wyp favor add [实体]

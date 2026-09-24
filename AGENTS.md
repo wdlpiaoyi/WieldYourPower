@@ -43,4 +43,4 @@ Bump BOTH or they drift: `gradle.properties` `mod_version` and `WieldYourPower.V
 - Author's favor (`AuthorsFavorEvents`) coefficients default to "no effect" (`damageCoefficient` 0, `maxHealthCoefficient` 0, `maxHealthChangeCoefficient` 1) on purpose: opt-in per entity for pack authors. Don't "fix" the defaults. Entities are chosen by `authorsFavor.filter` (comma matchers `tag,`/`type,`/`uuid,`, parsed by `EntityMatcher`/`FilterSyntax`). It only touches `setHealth`/`die` calls that bypass the vanilla damage chain; vanilla damage is never modified.
 - Keep `assets/wieldyourpower/lang/en_us.json` and `zh_cn.json` in sync.
 - `Reference/` is extracted third-party material (gitignored, study only); nothing there is compiled or shipped.
-- Do NOT publish GitHub Releases for this project. Source + tags only, so anyone who wants the mod must build it themselves - a small barrier against misuse. Releases are removed on purpose.
+- Do NOT publish GitHub Releases or version tags for this project. Source only, so anyone who wants the mod must build it themselves - a small barrier against misuse. Releases/tags are removed on purpose.
