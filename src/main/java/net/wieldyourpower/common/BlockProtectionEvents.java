@@ -56,6 +56,10 @@ public final class BlockProtectionEvents {
         if (state.isAir()) {
             return;
         }
+        if (!player.getMainHandItem().getItem().canAttackBlock(state, level, event.getPos(), player)) {
+            // Vanilla would not break it with this item either (e.g. a sword).
+            return;
+        }
         BlockPos pos = event.getPos().immutable();
         PENDING.put(pos, new Pending(serverLevel, pos, state.getBlock(), player, serverLevel.getGameTime() + CONFIRM_DELAY_TICKS));
     }
@@ -79,6 +83,9 @@ public final class BlockProtectionEvents {
             BlockState current = pending.level.getBlockState(pending.pos);
             if (current.isAir() || current.getBlock() != pending.block) {
                 // Vanilla or a multi-block breaker already handled it.
+                continue;
+            }
+            if (!pending.player.getMainHandItem().getItem().canAttackBlock(current, pending.level, pending.pos, pending.player)) {
                 continue;
             }
             if (ForceBlockBreak.breakBlock(pending.level, pending.pos, pending.player, false)) {

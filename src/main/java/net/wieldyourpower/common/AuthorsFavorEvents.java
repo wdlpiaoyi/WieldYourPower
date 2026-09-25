@@ -211,6 +211,10 @@ public final class AuthorsFavorEvents {
             return;
         }
         State state = state(entity);
+        if (state.deathAllowed) {
+            // Death already allowed (e.g. a vanilla-chain kill whose die() is deferred).
+            return;
+        }
         if (state.recentHurt) {
             // A death from the vanilla damage chain: leave it alone.
             state.deathAllowed = true;
@@ -267,6 +271,13 @@ public final class AuthorsFavorEvents {
         entity.addEffect(new MobEffectInstance(ModEffects.AUTHORS_FAVOR.get(), EFFECT_DURATION, 0, false, false, true));
 
         softenMaxHealthCut(entity, state);
+
+        // A lethal hit that came through the vanilla damage chain must be allowed to kill the entity,
+        // even when its own die() is deferred (no LivingDeathEvent yet); otherwise the fallback restore
+        // below keeps reviving it.
+        if (entity.getHealth() <= 0.0F && state.recentHurt) {
+            state.deathAllowed = true;
+        }
 
         // Undo a direct health write that bypassed setHealth (InfinityUtils.forceSetHealth writes the
         // synced DATA_HEALTH_ID itself, then drops loot). Only while protection is actually enabled.
