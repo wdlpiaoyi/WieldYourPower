@@ -146,7 +146,7 @@ public final class AuthorsFavorEvents {
                 return requested;
             }
             float coefficient = coefficient();
-            if (coefficient <= 0.0F) {
+            if (coefficient >= 1.0F) {
                 return requested;
             }
             float before = entity.getHealth();
@@ -164,21 +164,47 @@ public final class AuthorsFavorEvents {
                 state.damagePending = false;
                 return requested;
             }
-            return mitigate(before, requested, coefficient);
+            float mitigated = mitigate(before, requested, coefficient);
+            if (mitigated <= 0.0F) {
+                // The mixin already drove the health to zero; the per-tick fallback must not
+                // mitigate it a second time with a stale pre-drop health.
+                state.handledDrop = true;
+            }
+            return mitigated;
         } catch (Throwable throwable) {
             return requested;
         }
     }
 
     /**
-     * The drop amount ({@code before - requested}) is multiplied by the coefficient and floored.
+     * Scheme B: only the fraction {@code coefficient} of the change amount ({@code before - requested})
+     * actually takes effect, floored:
+     * {@code new = floor(before - (before - requested) * coefficient)}.
+     * {@code coefficient == 0} absorbs the whole change (health untouched); {@code coefficient == 1}
+     * lets it pass through in full (no protection).
      */
+    /**
+     * Whether the entity's vanilla synced health ({@code DATA_HEALTH_ID}) is at or below zero. When
+     * {@code getHealth()} reads zero while the vanilla field is still positive, the health is served
+     * by another mod's own field/override (a direct {@code DATA_HEALTH_ID} write would have lowered
+     * the vanilla field instead). The restore paths use this to avoid resurrecting an entity whose own
+     * health source already considers it dead, which would fight that mod's death handling instead of
+     * undoing a native write. Defaults to {@code true} so any failure keeps the old behaviour.
+     */
+    private static boolean vanillaHealthIsZero(LivingEntity entity) {
+        try {
+            return entity.getEntityData().get(LivingEntity.DATA_HEALTH_ID) <= 0.0F;
+        } catch (Throwable throwable) {
+            return true;
+        }
+    }
+
     private static float mitigate(float before, float requested, float coefficient) {
         float change = before - requested;
         if (change <= 0.0F) {
             return requested;
         }
-        return (float) Math.floor(change * coefficient);
+        return (float) Math.floor(before - change * coefficient);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
@@ -207,12 +233,18 @@ public final class AuthorsFavorEvents {
             return;
         }
         float coefficient = coefficient();
-        if (coefficient <= 0.0F) {
+        if (coefficient >= 1.0F) {
             return;
         }
         State state = state(entity);
         if (state.deathAllowed) {
             // Death already allowed (e.g. a vanilla-chain kill whose die() is deferred).
+            return;
+        }
+        if (!vanillaHealthIsZero(entity)) {
+            // getHealth() reports zero but the vanilla health field is still positive: another mod
+            // owns this entity's health. Let its own death handling run instead of reviving it.
+            state.deathAllowed = true;
             return;
         }
         if (state.recentHurt) {
@@ -281,13 +313,23 @@ public final class AuthorsFavorEvents {
 
         // Undo a direct health write that bypassed setHealth (InfinityUtils.forceSetHealth writes the
         // synced DATA_HEALTH_ID itself, then drops loot). Only while protection is actually enabled.
-        if (coefficient() > 0.0F && !state.deathAllowed && entity.getHealth() <= 0.0F) {
-            float maxHealth = entity.getMaxHealth();
-            float before = state.lastHealth > 0.0F ? state.lastHealth : maxHealth;
-            float restored = Math.max(1.0F, mitigate(before, 0.0F, coefficient()));
-            entity.dead = false;
-            entity.deathTime = 0;
-            entity.setHealth(Math.min(restored, maxHealth));
+        if (coefficient() < 1.0F && !state.deathAllowed && entity.getHealth() <= 0.0F) {
+            if (state.handledDrop || !vanillaHealthIsZero(entity)) {
+                // The zero came from a setHealth the mixin already mitigated, or from another mod's
+                // own health field (the vanilla DATA_HEALTH_ID is still positive): keep it down.
+                state.deathAllowed = true;
+            } else {
+                float maxHealth = entity.getMaxHealth();
+                float before = state.lastHealth > 0.0F ? state.lastHealth : maxHealth;
+                float restored = mitigate(before, 0.0F, coefficient());
+                if (restored <= 0.0F) {
+                    state.deathAllowed = true;
+                } else {
+                    entity.dead = false;
+                    entity.deathTime = 0;
+                    entity.setHealth(Math.min(restored, maxHealth));
+                }
+            }
         }
 
         // Undo MoreAvaritia-style forced deletion: it teleports the target to (-999,-999,-999) and
@@ -311,6 +353,7 @@ public final class AuthorsFavorEvents {
         state.lastHealth = entity.getHealth();
         state.recentHurt = false;
         state.damagePending = false;
+        state.handledDrop = false;
     }
 
     /**
@@ -352,6 +395,7 @@ public final class AuthorsFavorEvents {
         private boolean recentHurt;
         private boolean deathAllowed;
         private boolean damagePending;
+        private boolean handledDrop;
         private boolean hasSnapshot;
         private double lastX;
         private double lastY;

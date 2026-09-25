@@ -158,11 +158,13 @@ public final class WYPConfig {
 
             this.authorsFavorDamageCoefficient = builder
                     .comment("Only affects a setHealth call that does NOT come from the vanilla damage chain:",
-                            "when code sets the health below its current value, the new value becomes",
-                            "(current - requested) * coefficient, floored. Vanilla damage passes untouched.",
-                            "Range 0 - 1. Default 0 = no protection; 1 = the drop is fully absorbed.",
-                            "E.g. setHealth(0) at full health with 0.5 leaves half, with 1 leaves full health.")
-                    .defineInRange("damageCoefficient", 0.0D, 0.0D, 1.0D);
+                            "when code sets the health below its current value, only this fraction of the",
+                            "change actually takes effect: new = floor(current - (current - requested) * coefficient).",
+                            "Negative values (incl. -Inf) are treated as requested = 0.",
+                            "Range 0 - 1. Default 1 = no protection (the whole change applies);",
+                            "0 = the change is fully absorbed (health is left untouched).",
+                            "E.g. setHealth(0) at full health with 0.5 leaves half, with 0 leaves full health.")
+                    .defineInRange("damageCoefficient", 1.0D, 0.0D, 1.0D);
 
             this.authorsFavorMaxHealthCoefficient = builder
                     .comment("Hard floor for a max-health cut, relative to the entity's historical max health.",
