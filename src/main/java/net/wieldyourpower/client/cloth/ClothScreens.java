@@ -156,6 +156,18 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.creativePlacesBlocks"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.creativePlacesBlocks.set(value))
                 .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.creativePlacesThroughEntities"),
+                        WYPConfig.COMMON.creativePlacesThroughEntities.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.creativePlacesThroughEntities"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.creativePlacesThroughEntities.set(value))
+                .build());
+        general.addEntry(entry.startEnumSelector(Component.translatable("wieldyourpower.config.noUpdatePlacementMode"),
+                        WYPConfig.PlacementUpdateMode.class, WYPConfig.COMMON.noUpdatePlacementMode.get())
+                .setDefaultValue(WYPConfig.PlacementUpdateMode.HOLD)
+                .setTooltip(Component.translatable("wieldyourpower.tip.noUpdatePlacementMode"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.noUpdatePlacementMode.set(value))
+                .build());
         general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.blockBreakerEnabled"),
                         WYPConfig.COMMON.blockBreakerEnabled.get())
                 .setDefaultValue(true)
@@ -308,6 +320,8 @@ public final class ClothScreens {
         WYPConfig.COMMON.creativeHitboxMode.save();
         WYPConfig.COMMON.creativeBreaksProtectedBlocks.save();
         WYPConfig.COMMON.creativePlacesBlocks.save();
+        WYPConfig.COMMON.creativePlacesThroughEntities.save();
+        WYPConfig.COMMON.noUpdatePlacementMode.save();
         WYPConfig.COMMON.blockBreakerEnabled.save();
         WYPConfig.COMMON.blockProtectionBypass.save();
         WYPConfig.COMMON.killPiercesProtection.save();

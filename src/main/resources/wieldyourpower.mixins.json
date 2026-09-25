@@ -5,6 +5,9 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "wieldyourpower.refmap.json",
   "mixins": [
+    "BlockItemCanPlaceMixin",
+    "BlockItemPlaceMixin",
+    "BucketItemMixin",
     "EntityIsRemovedMixin",
     "EntityOnRemovedFromWorldMixin",
     "EntityRemoveMixin",
@@ -12,13 +15,16 @@
     "EntitySetRemovedMixin",
     "LevelGetEntitiesMixin",
     "LevelGetEntitiesTypeTestMixin",
+    "LevelSetBlockMixin",
     "LivingEntityActuallyHurtMixin",
     "LivingEntityDropLootMixin",
     "LivingEntityHurtMixin",
     "LivingEntityIsDeadOrDyingMixin",
     "LivingEntitySetHealthMixin",
     "PlayerListRespawnMixin",
-    "ServerPlayerDieMixin"
+    "ServerPlayerDieMixin",
+    "ServerPlayerGameModeMixin",
+    "SolidBucketItemMixin"
   ],
   "client": [
     "LivingEntityJumpMixin",

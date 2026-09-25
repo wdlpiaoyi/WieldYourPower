@@ -30,10 +30,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Hardened creative-mode defense. Damage is cancelled at every stage and each tick a protected creative
+ * Hardened creative/spectator-mode defense. Damage is cancelled at every stage and each tick a protected
  * player is topped up: at least {@code creativeMinHealth} health, at least {@code creativeMinMaxHealth}
  * max health, full food/saturation, no harmful effects, no fire, full air, and death is undone in place
- * (the player is revived where they are, never sent to the world spawn).
+ * (the player is revived where they are, never sent to the world spawn). Spectators are covered too.
  *
  * <p>It also pins the vanilla invulnerability-frame state ({@code invulnerableTime} / {@code lastHurt}),
  * so a hit that reaches the cooldown branch of {@code hurt()} is rejected there ("still in frames") and
@@ -121,8 +121,9 @@ public final class CreativeDefenseEvents {
     }
 
     private static boolean protectedCreative(Player player) {
-        // isCreative() first: it cheaply rejects almost every player tick before touching config / maps.
-        return player.isCreative()
+        // isCreative()/isSpectator() first: it cheaply rejects almost every player tick before touching
+        // config / maps. Spectators are protected on purpose, so mods cannot purge/kill them either.
+        return (player.isCreative() || player.isSpectator())
                 && enabled()
                 && !KillUtil.isForceKilling(player)
                 && !KillUtil.wasKilledByUs(player);

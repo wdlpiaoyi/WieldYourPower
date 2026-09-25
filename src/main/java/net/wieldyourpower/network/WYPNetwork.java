@@ -10,7 +10,7 @@ import net.wieldyourpower.WieldYourPower;
 
 public final class WYPNetwork {
 
-    private static final String VERSION = "2";
+    private static final String VERSION = "3";
     private static int nextId = 0;
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
@@ -39,6 +39,12 @@ public final class WYPNetwork {
                 .encoder(PacketOpenPanel::encode)
                 .decoder(PacketOpenPanel::decode)
                 .consumerMainThread((msg, ctx) -> PacketOpenPanel.handle(msg, ctx))
+                .add();
+
+        CHANNEL.messageBuilder(PacketNoUpdate.class, nextId++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(PacketNoUpdate::encode)
+                .decoder(PacketNoUpdate::decode)
+                .consumerMainThread((msg, ctx) -> PacketNoUpdate.handle(msg, ctx))
                 .add();
     }
 

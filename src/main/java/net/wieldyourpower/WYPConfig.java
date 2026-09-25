@@ -26,6 +26,12 @@ public final class WYPConfig {
         ALWAYS_HIDE
     }
 
+    public enum PlacementUpdateMode {
+        HOLD,
+        TOGGLE,
+        INVERTED_HOLD
+    }
+
     public static final class Common {
 
         public final ForgeConfigSpec.BooleanValue creativeDefense;
@@ -34,6 +40,8 @@ public final class WYPConfig {
         public final ForgeConfigSpec.EnumValue<HitboxMode> creativeHitboxMode;
         public final ForgeConfigSpec.BooleanValue creativeBreaksProtectedBlocks;
         public final ForgeConfigSpec.BooleanValue creativePlacesBlocks;
+        public final ForgeConfigSpec.BooleanValue creativePlacesThroughEntities;
+        public final ForgeConfigSpec.EnumValue<PlacementUpdateMode> noUpdatePlacementMode;
         public final ForgeConfigSpec.BooleanValue blockBreakerEnabled;
         public final ForgeConfigSpec.BooleanValue blockProtectionBypass;
         public final ForgeConfigSpec.BooleanValue killPiercesProtection;
@@ -61,20 +69,20 @@ public final class WYPConfig {
             builder.comment("WieldYourPower general settings").push("general");
 
             this.creativeDefense = builder
-                    .comment("Strengthen creative-mode defense so other mods cannot kill creative players.",
-                            "Only this mod's /wyp kill bypasses it.")
+                    .comment("Strengthen creative/spectator-mode defense so other mods cannot kill creative",
+                            "or spectator players. Only this mod's /wyp kill bypasses it.")
                     .define("creativeDefense", true);
 
             this.creativeMinHealth = builder
-                    .comment("Every tick keep a protected creative player's health at least this high.")
+                    .comment("Every tick keep a protected creative/spectator player's health at least this high.")
                     .defineInRange("creativeMinHealth", 20.0D, 0.0D, 1024.0D);
 
             this.creativeMinMaxHealth = builder
-                    .comment("Every tick keep a protected creative player's max health at least this high.")
+                    .comment("Every tick keep a protected creative/spectator player's max health at least this high.")
                     .defineInRange("creativeMinMaxHealth", 20.0D, 1.0D, 1024.0D);
 
             this.creativeHitboxMode = builder
-                    .comment("Experimental: hide a protected creative player from entity lookups (absolute dodge).",
+                    .comment("Experimental: hide a protected creative/spectator player from entity lookups (absolute dodge).",
                             "REMOVE_UNLESS_SNEAK_GROUND: hidden, restored while sneaking on the ground (default).",
                             "HIDE_ONLY_SNEAK_GROUND: inverse of the above.",
                             "NEVER_HIDE / ALWAYS_HIDE: unconditional.")
@@ -90,6 +98,20 @@ public final class WYPConfig {
                             "(cancelled placement events are released). Only placement with a block item",
                             "in hand is affected.")
                     .define("creativePlacesBlocks", true);
+
+            this.creativePlacesThroughEntities = builder
+                    .comment("Let creative players place a block even when an entity (another mob, a",
+                            "boat, ...) occupies the target position. Vanilla refuses this in",
+                            "BlockItem.canPlace through Level.isUnobstructed, before any event fires.")
+                    .define("creativePlacesThroughEntities", true);
+
+            this.noUpdatePlacementMode = builder
+                    .comment("How the 'no update' keybind (default unbound) activates, creative only. While",
+                            "active, the player's own placement/breaking (block items and buckets) skips",
+                            "neighbour notify and neighbour shape updates, so observers, pistons and redstone",
+                            "do not react; the changed block still syncs to clients, other players unaffected.",
+                            "HOLD: active while held. TOGGLE: press to toggle. INVERTED_HOLD: active while not held.")
+                    .defineEnum("noUpdatePlacementMode", PlacementUpdateMode.HOLD);
 
             this.blockBreakerEnabled = builder
                     .comment("Enable the admin Block Breaker item. Right-click a block to force-remove it,",

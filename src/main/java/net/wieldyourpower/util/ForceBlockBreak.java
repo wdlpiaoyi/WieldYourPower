@@ -38,6 +38,10 @@ public final class ForceBlockBreak {
         }
 
         boolean bypass = BlockProtectionBypass.enter();
+        boolean noUpdate = NoUpdateMode.isActiveFor(player);
+        if (noUpdate) {
+            NoUpdateMode.beginWindow();
+        }
         try {
             // Let the block run its own destroy logic (e.g. dropping an altar's contents).
             try {
@@ -64,6 +68,9 @@ public final class ForceBlockBreak {
             return true;
         } finally {
             BlockProtectionBypass.exit(bypass);
+            if (noUpdate) {
+                NoUpdateMode.endWindow();
+            }
         }
     }
 
@@ -77,7 +84,9 @@ public final class ForceBlockBreak {
             BlockState air = Blocks.AIR.defaultBlockState();
             chunk.setBlockState(pos, air, false);
             level.sendBlockUpdated(pos, oldState, air, 3);
-            level.updateNeighborsAt(pos, oldState.getBlock());
+            if (!NoUpdateMode.isSuppressing(level)) {
+                level.updateNeighborsAt(pos, oldState.getBlock());
+            }
         } catch (Throwable ignored) {
         }
     }

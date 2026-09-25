@@ -16,11 +16,17 @@ public final class ClientSetup {
             GLFW.GLFW_KEY_UNKNOWN,
             "key.categories.wieldyourpower");
 
+    public static final KeyMapping NO_UPDATE = new KeyMapping(
+            "key.wieldyourpower.no_update",
+            GLFW.GLFW_KEY_UNKNOWN,
+            "key.categories.wieldyourpower");
+
     private ClientSetup() {
     }
 
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(OPEN_PANEL);
+        event.register(NO_UPDATE);
     }
 }
