@@ -23,3 +23,6 @@ libs/
 # OS
 Thumbs.db
 .DS_Store
+
+# Local machine notes (never committed)
+环境提示.md
