@@ -42,6 +42,8 @@ public final class WYPConfig {
         public final ForgeConfigSpec.BooleanValue creativePlacesBlocks;
         public final ForgeConfigSpec.BooleanValue creativePlacesThroughEntities;
         public final ForgeConfigSpec.EnumValue<PlacementUpdateMode> noUpdatePlacementMode;
+        public final ForgeConfigSpec.BooleanValue allyProtectsOwned;
+        public final ForgeConfigSpec.BooleanValue allyBlocksSelfHarm;
         public final ForgeConfigSpec.BooleanValue blockBreakerEnabled;
         public final ForgeConfigSpec.BooleanValue blockProtectionBypass;
         public final ForgeConfigSpec.BooleanValue killPiercesProtection;
@@ -112,6 +114,16 @@ public final class WYPConfig {
                             "do not react; the changed block still syncs to clients, other players unaffected.",
                             "HOLD: active while held. TOGGLE: press to toggle. INVERTED_HOLD: active while not held.")
                     .defineEnum("noUpdatePlacementMode", PlacementUpdateMode.HOLD);
+
+            this.allyProtectsOwned = builder
+                    .comment("Ally protection also covers ownership: a player cannot damage their own",
+                            "pets/summons, and pets/summons of one owner cannot damage each other.")
+                    .define("allyProtectsOwned", true);
+
+            this.allyBlocksSelfHarm = builder
+                    .comment("Also block an owned entity from damaging itself. Off by default; self-harm",
+                            "is odd and usually nothing should call it.")
+                    .define("allyBlocksSelfHarm", false);
 
             this.blockBreakerEnabled = builder
                     .comment("Enable the admin Block Breaker item. Right-click a block to force-remove it,",

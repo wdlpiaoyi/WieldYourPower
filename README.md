@@ -16,7 +16,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 - **跨越高度**：原版 `0.6` 的系数（`-1` 不限，`1` 原版，`0` 无法跨越）。
 - **挖掘**：破坏方块所需最少刻数（`-1` 禁止挖掘）与两次破坏间的冷却刻数。
 - **自定义 attribute 上限**：每玩家一组 `attribute:<属性id>:<上限>`，服务端每 tick 用临时修饰符钳制（不改底层数值）。
-- **友军防护**：只拦截 `source.getEntity() instanceof Player` 的伤害，按 `tag:` / `type:` / `uuid:` 匹配（默认 `type:touhou_little_maid:maid`）。
+- **友军防护**：**按攻击者判定**（只查攻击方——玩家本人，或其宠物/召唤物/投射物的主人——自己的表），命中即拦。默认还覆盖主从关系：玩家打不了自家宠物/召唤物，同一主人的宠物/召唤物也互不伤害（`allyProtectsOwned` 可关）。owner 溯源走 `OwnableEntity`/驯服动物 + 投射物/药水云 + 召唤物关键字反射兜底；自残默认放行（`allyBlocksSelfHarm` 可开）。按 `tag:` / `type:` / `uuid:` 匹配（默认 `type:touhou_little_maid:maid`）。
 - 打开面板：按键（默认未绑定，需自行设置）或 `/wyp panel`；使用 Cloth Config 界面。
 
 ### 击杀

@@ -168,6 +168,18 @@ public final class ClothScreens {
                 .setTooltip(Component.translatable("wieldyourpower.tip.noUpdatePlacementMode"))
                 .setSaveConsumer(value -> WYPConfig.COMMON.noUpdatePlacementMode.set(value))
                 .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.allyProtectsOwned"),
+                        WYPConfig.COMMON.allyProtectsOwned.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("wieldyourpower.tip.allyProtectsOwned"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.allyProtectsOwned.set(value))
+                .build());
+        general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.allyBlocksSelfHarm"),
+                        WYPConfig.COMMON.allyBlocksSelfHarm.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("wieldyourpower.tip.allyBlocksSelfHarm"))
+                .setSaveConsumer(value -> WYPConfig.COMMON.allyBlocksSelfHarm.set(value))
+                .build());
         general.addEntry(entry.startBooleanToggle(Component.translatable("wieldyourpower.config.blockBreakerEnabled"),
                         WYPConfig.COMMON.blockBreakerEnabled.get())
                 .setDefaultValue(true)
@@ -322,6 +334,8 @@ public final class ClothScreens {
         WYPConfig.COMMON.creativePlacesBlocks.save();
         WYPConfig.COMMON.creativePlacesThroughEntities.save();
         WYPConfig.COMMON.noUpdatePlacementMode.save();
+        WYPConfig.COMMON.allyProtectsOwned.save();
+        WYPConfig.COMMON.allyBlocksSelfHarm.save();
         WYPConfig.COMMON.blockBreakerEnabled.save();
         WYPConfig.COMMON.blockProtectionBypass.save();
         WYPConfig.COMMON.killPiercesProtection.save();
