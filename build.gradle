@@ -10,8 +10,11 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 // Cloth Config is a required dependency now; the jar is read from your modpack mods folder
 // (override with -PmodpackModsDir=...). The build fails if it is missing.
+// Curios is an optional (soft) dependency: the jar is read from the same folder when present, and the
+// accessor is only loaded at runtime when Curios is loaded.
 def modpackModsDir = project.findProperty('modpackModsDir') ?: 'libs'
 def clothJars = fileTree(dir: modpackModsDir, include: ['cloth-config-*.jar'])
+def curiosJars = fileTree(dir: modpackModsDir, include: ['curios-*.jar'])
 
 minecraft {
     mappings channel: 'official', version: '1.20.1'
@@ -46,6 +49,7 @@ mixin {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.forge_version}"
     compileOnly clothJars
+    compileOnly curiosJars
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

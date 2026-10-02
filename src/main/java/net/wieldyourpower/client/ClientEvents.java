@@ -39,14 +39,16 @@ public final class ClientEvents {
     private static boolean noUpdateSent;
 
     /**
-     * Computes the local "no update" state from the keybind and its configured mode, and tells the
-     * server only when it changes. The client also suppresses its own neighbour derivations locally
-     * while active, so its prediction matches the server's withheld updates.
+     * Computes the local "no update" state from the keybind and its configured mode, and tells the server
+     * only when it changes. Usable in creative, or when the server granted this client the mode (accessory;
+     * synced by {@code PacketNoUpdatePermission}).
      */
     private static void updateNoUpdateMode() {
         Minecraft minecraft = Minecraft.getInstance();
         boolean active = false;
-        if (minecraft.player != null && minecraft.player.isCreative() && !ClientSetup.NO_UPDATE.isUnbound()) {
+        if (minecraft.player != null
+                && (minecraft.player.isCreative() || NoUpdateMode.clientPermitted())
+                && !ClientSetup.NO_UPDATE.isUnbound()) {
             switch (WYPConfig.COMMON.noUpdatePlacementMode.get()) {
                 case HOLD -> active = ClientSetup.NO_UPDATE.isDown();
                 case INVERTED_HOLD -> active = !ClientSetup.NO_UPDATE.isDown();
@@ -75,6 +77,7 @@ public final class ClientEvents {
         noUpdateToggled = false;
         noUpdateSent = false;
         NoUpdateMode.setClientActive(false);
+        NoUpdateMode.setClientPermitted(false);
     }
 
     @SubscribeEvent

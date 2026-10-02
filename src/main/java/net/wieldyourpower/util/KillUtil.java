@@ -140,7 +140,7 @@ public final class KillUtil {
     }
 
     /**
-     * "Honor" variant: only the normal death attempt, never a forced removal. Used by /wyp killhonor.
+     * "Honor" variant: only the normal death attempt, never a forced removal. Used by /wyp kill honor.
      */
     public static boolean honorKill(@Nullable Entity entity) {
         if (entity == null || entity.isRemoved()) {

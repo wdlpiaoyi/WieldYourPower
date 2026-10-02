@@ -33,9 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Only calls that bypass the vanilla damage chain are touched. Everything that goes through
  * {@code hurt}/{@code actuallyHurt} (ordinary weapons, mob attacks, OP weapon damage) is left alone.
  * A direct code call such as {@code setHealth(X)} with {@code X} below the current health is rewritten to
- * {@code floor((current - X) * coefficient)} by {@code LivingEntitySetHealthMixin}; a direct {@code die()}
- * with no damage event is cancelled and restored the same way. The coefficient is clamped to 0 - 1:
- * {@code 0} means no protection, {@code 1} absorbs the drop entirely.</p>
+ * {@code floor(current - (current - X) * coefficient)} by {@code LivingEntitySetHealthMixin}; a direct
+ * {@code die()} with no damage event is cancelled and restored the same way. The coefficient is clamped to
+ * 0 - 1: {@code 1} means no protection (the whole drop applies), {@code 0} absorbs the drop entirely.</p>
  *
  * <p>While the tag is present on a non-player entity it also:</p>
  * <ul>

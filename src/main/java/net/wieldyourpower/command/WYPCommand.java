@@ -14,12 +14,20 @@ import net.minecraft.world.entity.LivingEntity;
 import net.wieldyourpower.WYPConfig;
 import net.wieldyourpower.capability.IPlayerLimits;
 import net.wieldyourpower.capability.ModCapabilities;
+import net.wieldyourpower.common.NoUpdateEvents;
 import net.wieldyourpower.network.PacketOpenPanel;
 import net.wieldyourpower.network.WYPNetwork;
 import net.wieldyourpower.util.FrozenEntities;
 
 import java.util.Collection;
 
+/**
+ * The {@code /wyp} tree. It is deliberately small: every self-limit (walk/fly/mine speed, jump, step,
+ * attributes, reset) is edited in the Cloth panel ({@code /wyp panel}) and has no command, and the
+ * kill-honor variant is the trailing {@code honor} literal of {@code /wyp kill} instead of its own
+ * command. {@code /wyp status} stays because it can also report <i>another</i> player's limits, which
+ * the self-limits panel cannot.
+ */
 public final class WYPCommand {
 
     private WYPCommand() {
@@ -28,23 +36,25 @@ public final class WYPCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("wyp")
                 .then(Commands.literal("panel")
-                        .executes(ctx -> openPanel(ctx.getSource(), net.wieldyourpower.network.PacketOpenPanel.LIMITS)))
+                        .executes(ctx -> openPanel(ctx.getSource(), PacketOpenPanel.LIMITS)))
                 .then(Commands.literal("config")
-                        .executes(ctx -> openPanel(ctx.getSource(), net.wieldyourpower.network.PacketOpenPanel.CONFIG)))
+                        .executes(ctx -> openPanel(ctx.getSource(), PacketOpenPanel.CONFIG)))
                 .then(Commands.literal("kill")
                         .requires(source -> source.hasPermission(2))
                         .executes(ctx -> KillCommand.execute(ctx.getSource(),
                                 java.util.List.of(ctx.getSource().getEntityOrException())))
+                        .then(Commands.literal("honor")
+                                .executes(ctx -> KillCommand.executeHonor(ctx.getSource(),
+                                        java.util.List.of(ctx.getSource().getEntityOrException())))
+                                .then(Commands.argument("targets", EntityArgument.entities())
+                                        .executes(ctx -> KillCommand.executeHonor(ctx.getSource(),
+                                                EntityArgument.getEntities(ctx, "targets")))))
                         .then(Commands.argument("targets", EntityArgument.entities())
                                 .executes(ctx -> KillCommand.execute(ctx.getSource(),
-                                        EntityArgument.getEntities(ctx, "targets")))))
-                .then(Commands.literal("killhonor")
-                        .requires(source -> source.hasPermission(2))
-                        .executes(ctx -> KillCommand.executeHonor(ctx.getSource(),
-                                java.util.List.of(ctx.getSource().getEntityOrException())))
-                        .then(Commands.argument("targets", EntityArgument.entities())
-                                .executes(ctx -> KillCommand.executeHonor(ctx.getSource(),
-                                        EntityArgument.getEntities(ctx, "targets")))))
+                                        EntityArgument.getEntities(ctx, "targets")))
+                                .then(Commands.literal("honor")
+                                        .executes(ctx -> KillCommand.executeHonor(ctx.getSource(),
+                                                EntityArgument.getEntities(ctx, "targets"))))))
                 .then(Commands.literal("freeze")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.argument("targets", EntityArgument.entities())
@@ -70,70 +80,27 @@ public final class WYPCommand {
                                         java.util.List.of(ctx.getSource().getEntityOrException()), false))
                                 .then(Commands.argument("targets", EntityArgument.entities())
                                         .executes(ctx -> favor(ctx.getSource(), EntityArgument.getEntities(ctx, "targets"), false)))))
-                .then(Commands.literal("jump")
-                        .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                .executes(ctx -> setJump(ctx.getSource(), ctx.getSource().getPlayerOrException(), DoubleArgumentType.getDouble(ctx, "value")))
-                                .then(Commands.argument("player", EntityArgument.player())
-                                        .requires(source -> source.hasPermission(2))
-                                        .executes(ctx -> setJump(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), DoubleArgumentType.getDouble(ctx, "value"))))))
-                .then(Commands.literal("step")
-                        .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                .executes(ctx -> setStep(ctx.getSource(), ctx.getSource().getPlayerOrException(), DoubleArgumentType.getDouble(ctx, "value")))
-                                .then(Commands.argument("player", EntityArgument.player())
-                                        .requires(source -> source.hasPermission(2))
-                                        .executes(ctx -> setStep(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), DoubleArgumentType.getDouble(ctx, "value"))))))
-                .then(Commands.literal("attribute")
-                        .then(Commands.argument("id", com.mojang.brigadier.arguments.StringArgumentType.string())
-                                .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                        .executes(ctx -> setAttribute(ctx.getSource(), ctx.getSource().getPlayerOrException(),
-                                                com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id"),
-                                                DoubleArgumentType.getDouble(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setAttribute(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"),
-                                                        com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "id"),
-                                                        DoubleArgumentType.getDouble(ctx, "value")))))))
+                .then(Commands.literal("access")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("grant")
+                                .then(Commands.literal("noupdate")
+                                        .executes(ctx -> noUpdateGrant(ctx.getSource(),
+                                                java.util.List.of(ctx.getSource().getPlayerOrException()), true))
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ctx -> noUpdateGrant(ctx.getSource(),
+                                                        EntityArgument.getPlayers(ctx, "targets"), true)))))
+                        .then(Commands.literal("revoke")
+                                .then(Commands.literal("noupdate")
+                                        .executes(ctx -> noUpdateGrant(ctx.getSource(),
+                                                java.util.List.of(ctx.getSource().getPlayerOrException()), false))
+                                        .then(Commands.argument("targets", EntityArgument.players())
+                                                .executes(ctx -> noUpdateGrant(ctx.getSource(),
+                                                        EntityArgument.getPlayers(ctx, "targets"), false))))))
                 .then(Commands.literal("status")
                         .executes(ctx -> status(ctx.getSource(), ctx.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .requires(source -> source.hasPermission(2))
-                                .executes(ctx -> status(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
-                .then(Commands.literal("reset")
-                        .executes(ctx -> reset(ctx.getSource(), ctx.getSource().getPlayerOrException()))
-                        .then(Commands.argument("player", EntityArgument.player())
-                                .requires(source -> source.hasPermission(2))
-                                .executes(ctx -> reset(ctx.getSource(), EntityArgument.getPlayer(ctx, "player")))))
-                .then(Commands.literal("set")
-                        .then(Commands.literal("walkSpeed")
-                                .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                        .executes(ctx -> setWalk(ctx.getSource(), ctx.getSource().getPlayerOrException(), DoubleArgumentType.getDouble(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setWalk(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), DoubleArgumentType.getDouble(ctx, "value"))))))
-                        .then(Commands.literal("flyH")
-                                .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                        .executes(ctx -> setFlyH(ctx.getSource(), ctx.getSource().getPlayerOrException(), DoubleArgumentType.getDouble(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setFlyH(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), DoubleArgumentType.getDouble(ctx, "value"))))))
-                        .then(Commands.literal("flyV")
-                                .then(Commands.argument("value", DoubleArgumentType.doubleArg())
-                                        .executes(ctx -> setFlyV(ctx.getSource(), ctx.getSource().getPlayerOrException(), DoubleArgumentType.getDouble(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setFlyV(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), DoubleArgumentType.getDouble(ctx, "value"))))))
-                        .then(Commands.literal("mineSpeed")
-                                .then(Commands.argument("value", IntegerArgumentType.integer(-1))
-                                        .executes(ctx -> setMineSpeed(ctx.getSource(), ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setMineSpeed(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), IntegerArgumentType.getInteger(ctx, "value"))))))
-                        .then(Commands.literal("mineInterval")
-                                .then(Commands.argument("value", IntegerArgumentType.integer(0))
-                                        .executes(ctx -> setMineInterval(ctx.getSource(), ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "value")))
-                                        .then(Commands.argument("player", EntityArgument.player())
-                                                .requires(source -> source.hasPermission(2))
-                                                .executes(ctx -> setMineInterval(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"), IntegerArgumentType.getInteger(ctx, "value"))))))));
+                                .executes(ctx -> status(ctx.getSource(), EntityArgument.getPlayer(ctx, "player"))))));
     }
 
     private static int openPanel(CommandSourceStack source, int screen) throws CommandSyntaxException {
@@ -201,6 +168,26 @@ public final class WYPCommand {
         return changed;
     }
 
+    private static int noUpdateGrant(CommandSourceStack source, Collection<ServerPlayer> targets, boolean allowed) {
+        int count = 0;
+        for (ServerPlayer target : targets) {
+            if (NoUpdateEvents.applyGrant(target, allowed)) {
+                count++;
+            }
+        }
+        if (count == 0) {
+            source.sendFailure(Component.translatable(allowed
+                    ? "commands.wieldyourpower.grant.noupdate.none"
+                    : "commands.wieldyourpower.revoke.noupdate.none"));
+            return 0;
+        }
+        final int changed = count;
+        source.sendSuccess(() -> Component.translatable(allowed
+                ? "commands.wieldyourpower.grant.noupdate.success"
+                : "commands.wieldyourpower.revoke.noupdate.success", changed), true);
+        return changed;
+    }
+
     private static int status(CommandSourceStack source, ServerPlayer target) {
         IPlayerLimits limits = ModCapabilities.resolve(target);
         if (limits == null) {
@@ -217,122 +204,10 @@ public final class WYPCommand {
         source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.status.step", fmt(limits.getStepLimit())), false);
         source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.status.attribute",
                 limits.getAttributeLimits().isEmpty() ? "-" : String.join(", ", limits.getAttributeLimits())), false);
-        return 1;
-    }
-
-    private static int reset(CommandSourceStack source, ServerPlayer target) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setWalkSpeedLimit(-1);
-        limits.setFlySpeedHorizontalLimit(-1);
-        limits.setFlySpeedVerticalLimit(-1);
-        limits.setMineSpeedLimit(0);
-        limits.setMineInterval(0);
-        limits.setJumpLimit(-1);
-        limits.setStepLimit(-1);
-        limits.setAttributeLimits(java.util.List.of());
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.reset", target.getGameProfile().getName()), true);
-        return 1;
-    }
-
-    private static int setWalk(CommandSourceStack source, ServerPlayer target, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setWalkSpeedLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.walk", fmt(value)), false);
-        return 1;
-    }
-
-    private static int setFlyH(CommandSourceStack source, ServerPlayer target, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setFlySpeedHorizontalLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.flyH", fmt(value)), false);
-        return 1;
-    }
-
-    private static int setFlyV(CommandSourceStack source, ServerPlayer target, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setFlySpeedVerticalLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.flyV", fmt(value)), false);
-        return 1;
-    }
-
-    private static int setMineSpeed(CommandSourceStack source, ServerPlayer target, int value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setMineSpeedLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.mineSpeed", value), false);
-        return 1;
-    }
-
-    private static int setJump(CommandSourceStack source, ServerPlayer target, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setJumpLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.jump", fmt(value)), false);
-        return 1;
-    }
-
-    private static int setStep(CommandSourceStack source, ServerPlayer target, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setStepLimit(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.step", fmt(value)), false);
-        return 1;
-    }
-
-    private static int setAttribute(CommandSourceStack source, ServerPlayer target, String id, double value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        java.util.List<String> updated = new java.util.ArrayList<>();
-        String prefix = "attribute," + id + ",";
-        for (String entry : limits.getAttributeLimits()) {
-            if (entry == null || !entry.startsWith(prefix)) {
-                updated.add(entry);
-            }
-        }
-        if (value >= 0.0D) {
-            updated.add(prefix + value);
-        }
-        limits.setAttributeLimits(updated);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.attribute", id, fmt(value)), false);
-        return 1;
-    }
-
-    private static int setMineInterval(CommandSourceStack source, ServerPlayer target, int value) {
-        IPlayerLimits limits = ModCapabilities.resolve(target);
-        if (limits == null) {
-            return 0;
-        }
-        limits.setMineInterval(value);
-        WYPNetwork.syncTo(target);
-        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.set.mineInterval", value), false);
+        source.sendSuccess(() -> Component.translatable("commands.wieldyourpower.status.noUpdate",
+                Component.translatable(limits.isNoUpdateGranted()
+                        ? "commands.wieldyourpower.status.noUpdate.granted"
+                        : "commands.wieldyourpower.status.noUpdate.none")), false);
         return 1;
     }
 

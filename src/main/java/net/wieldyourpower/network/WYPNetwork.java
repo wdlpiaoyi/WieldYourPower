@@ -10,7 +10,7 @@ import net.wieldyourpower.WieldYourPower;
 
 public final class WYPNetwork {
 
-    private static final String VERSION = "3";
+    private static final String VERSION = "4";
     private static int nextId = 0;
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
@@ -46,6 +46,16 @@ public final class WYPNetwork {
                 .decoder(PacketNoUpdate::decode)
                 .consumerMainThread((msg, ctx) -> PacketNoUpdate.handle(msg, ctx))
                 .add();
+
+        CHANNEL.messageBuilder(PacketNoUpdatePermission.class, nextId++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(PacketNoUpdatePermission::encode)
+                .decoder(PacketNoUpdatePermission::decode)
+                .consumerMainThread((msg, ctx) -> PacketNoUpdatePermission.handle(msg, ctx))
+                .add();
+    }
+
+    public static void sendNoUpdatePermission(ServerPlayer player, boolean allowed) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PacketNoUpdatePermission(allowed));
     }
 
     public static void syncTo(ServerPlayer player) {

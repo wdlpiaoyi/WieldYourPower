@@ -22,8 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class NoUpdateMode {
 
     private static final Set<UUID> ACTIVE = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> PERMITTED = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> CURIOS = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> GRANTED = ConcurrentHashMap.newKeySet();
     private static final ThreadLocal<int[]> WINDOW = ThreadLocal.withInitial(() -> new int[1]);
     private static volatile boolean clientActive;
+    private static volatile boolean clientPermitted;
 
     private NoUpdateMode() {
     }
@@ -40,6 +44,58 @@ public final class NoUpdateMode {
     /** Server side: forget a player (logout). */
     public static void clear(UUID id) {
         ACTIVE.remove(id);
+        PERMITTED.remove(id);
+        CURIOS.remove(id);
+        GRANTED.remove(id);
+    }
+
+    /**
+     * Server side: grant/revoke the mode via the API. Returns whether the effective permission changed, so
+     * the caller can decide whether to sync the client.
+     */
+    public static boolean permit(UUID id, boolean allowed) {
+        boolean before = isPermitted(id);
+        if (allowed) {
+            PERMITTED.add(id);
+        } else {
+            PERMITTED.remove(id);
+        }
+        return before != isPermitted(id);
+    }
+
+    /**
+     * Server side: grant/revoke from the Curios auto-detection. Kept separate from {@link #permit} so the
+     * two sources never fight each other; returns whether the effective permission changed.
+     */
+    public static boolean setCurioAccess(UUID id, boolean allowed) {
+        boolean before = isPermitted(id);
+        if (allowed) {
+            CURIOS.add(id);
+        } else {
+            CURIOS.remove(id);
+        }
+        return before != isPermitted(id);
+    }
+
+    /**
+     * Server side: grant/revoke from the operator command ({@code /wyp access grant|revoke noupdate}). Kept
+     * separate from {@link #permit} and {@link #setCurioAccess} so the three sources never fight each
+     * other; the grant itself is persisted in the player's capability and re-applied on login. Returns
+     * whether the effective permission changed.
+     */
+    public static boolean setGrantAccess(UUID id, boolean allowed) {
+        boolean before = isPermitted(id);
+        if (allowed) {
+            GRANTED.add(id);
+        } else {
+            GRANTED.remove(id);
+        }
+        return before != isPermitted(id);
+    }
+
+    /** Server side: whether the player may use the mode (API grant, equipped curio, or an operator grant). */
+    public static boolean isPermitted(UUID id) {
+        return PERMITTED.contains(id) || CURIOS.contains(id) || GRANTED.contains(id);
     }
 
     /** Client side: the local computed state, applied every tick. */
@@ -51,9 +107,26 @@ public final class NoUpdateMode {
         return clientActive;
     }
 
-    /** Whether the given player has the mode on, on whichever side owns them. Creative only. */
+    /** Client side: whether the server granted this client the mode (accessory etc.). */
+    public static void setClientPermitted(boolean allowed) {
+        clientPermitted = allowed;
+    }
+
+    public static boolean clientPermitted() {
+        return clientPermitted;
+    }
+
+    /** Whether the player is allowed to use the mode at all: creative, or granted by an accessory. */
+    public static boolean isPermittedFor(Player player) {
+        if (player == null) {
+            return false;
+        }
+        return player.level().isClientSide ? clientPermitted : isPermitted(player.getUUID());
+    }
+
+    /** Whether the given player has the mode on, on whichever side owns them. */
     public static boolean isActiveFor(Player player) {
-        if (player == null || !player.isCreative()) {
+        if (player == null || !(player.isCreative() || isPermittedFor(player))) {
             return false;
         }
         return player.level().isClientSide ? clientActive : ACTIVE.contains(player.getUUID());

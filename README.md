@@ -22,7 +22,7 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 ### 击杀
 - `/wyp kill`：增强击杀，无视无敌、图腾、事件取消、`discard`，对硬扛者强制移除，并清除残留血条；对玩家可强制重生，补刀绕过复活拦截。
 - **永久移除**：对"移除后靠 `addFreshEntity` 自我复活"的怪物，会拒绝其重新加入世界，击杀真正落地（按实体实例判定，不受 UUID 改动影响）。
-- `/wyp killhonor`：只走普通死亡流程的变体（不做强制移除）。
+- `/wyp kill [目标] honor`：只走普通死亡流程的变体（不做强制移除）。
 - **武德** `killHonor`：命中的目标只走一次普通死亡，交给其它模组接管（默认末影龙、凋灵、`tag:odamaneFinalDeath`）。
 - **Boss 反清场兼容**（`bossDespawnCompat`，默认关闭）：关键字反射调用目标的清理逻辑，带字节码安全扫描，仅信任整合包时开启。
 
@@ -49,10 +49,41 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 ### 创造击破与方块破坏器
 - **创造击破**：创造玩家左键即可破坏那些通常难以破坏的方块；本模组的挖掘自我限制仍然生效（`mineSpeed`/`mineInterval` 有设置时不介入）；与原版一致，手持不能破坏方块的物品（如剑）不会触发。配置项 `creativeBreaksProtectedBlocks`。
 - **创造放置**：创造玩家可以放置被其他模组拦截的方块（放行被取消的放置事件）；并且可**忽略目标格被实体占用**（原版 `Level.isUnobstructed` 会拦生物/船等），即能把方块放进生物所在的格子。配置项 `creativePlacesBlocks` / `creativePlacesThroughEntities`。
-- **放置/破坏不触发更新**：新增按键（默认空绑定，分类「力量掌控」，**仅创造模式**）。激活时**你自己的**放置/破坏（含方块物品、流体桶/细雪桶，以及方块破坏器、创造强制击破）跳过邻居通知与邻居形状更新——观察者、活塞、红石不响应；方块本身照常同步、其它玩家不受影响。激活方式由配置 `noUpdatePlacementMode` 决定：`HOLD` 按住 / `TOGGLE` 切换 / `INVERTED_HOLD` 反向按住（默认 `HOLD`）。
+- **抑制更新（放置/破坏）**：新增按键（默认空绑定，分类「力量掌控」，默认**仅创造模式**可用，生存玩家需先获授权）。激活时**你自己的**放置/破坏（含方块物品、流体桶/细雪桶，以及方块破坏器、创造强制击破）与**右键方块交互**（骨粉、打火石、斧/锄/铲、门/活板门、按钮/拉杆、蜡烛、营火、TNT、重生锚等）跳过邻居通知与邻居形状更新——**包括红石火把、红石线、中继器、比较器、拉杆这类在 `onPlace`/`onRemove` 里自己发通知的方块**（因此按住快捷键破坏红石火把不会再让活塞收回）——观察者、活塞、红石不响应；**幽匿振动**同样被吞掉：幽匿传感器 / 尖啸体 / 催化体 / 监守者只通过游戏事件感知世界，激活期间你自己的破坏/放置/右键交互产生的这些事件不再派发，因此传感器不会听到你、也不会输出红石；方块本身照常同步、其它玩家不受影响。切换时动作栏会提示开/关。激活方式由配置 `noUpdatePlacementMode` 决定：`HOLD` 按住 / `TOGGLE` 切换 / `INVERTED_HOLD` 反向按住（默认 `HOLD`）。
+- **生存玩家授权**：生存玩家默认不能用该按键，需先获得「抑制更新」权限，三种来源互不干扰——API `setSurvivalNoUpdateAccess`、戴 `noUpdateCurioTag` 标签的饰品、以及管理指令 `/wyp access grant noupdate [玩家]`（`/wyp access revoke noupdate [玩家]` 撤销，权限等级 2）。指令授权**按玩家持久保存**（死亡重生、重登、重启都保留），撤销后立刻失效；是否已授权可用 `/wyp status [玩家]` 查看。
 - **方块破坏器**（管理员物品，创造模式「操作员实用物品」标签页）：右键方块强制移除，并**屏蔽该方块自身的右键交互**（自带的交互界面、放置等），无视自我限制。配置项 `blockBreakerEnabled`。
 - 二者依赖一个兼容处理开关 `blockProtectionBypass`（默认开）来让移除在个别特殊方块上生效；该处理是关键词式的，不针对任何特定模组，找不到时自动退回普通移除。
 - 破坏遵循原版创造行为：**容器内容物掉落、方块物品不掉落**。
+
+### API（供 KubeJS / 其他模组）
+类：`net.wieldyourpower.api.WieldYourPowerApi`。方块操作是**服务端**静态方法（客户端调用返回 `false`；返回 `true` 表示方块确实变了）；`setSurvivalNoUpdateAccess` 也是**服务端**调用（会同步给该玩家客户端）。
+
+| 方法 | 作用 |
+|---|---|
+| `breakBlock(level, pos, player)` / `(…, drop)` | 强制移除方块（同管理员方块破坏器：跑方块自身 destroy 钩子、关键词式绕过其它模组的方块保护）；`drop` 控制是否先掉资源 |
+| `breakBlockNoUpdate(level, pos, player)` / `(…, drop)` | 同上，但**不触发邻居更新**（观察者/活塞/红石不响应；方块本身照常同步） |
+| `placeBlockNoUpdate(level, pos, state, player)` | 放置 `state` 且**不触发邻居更新**（同 `BlockItem.placeBlock` 的写入方式） |
+| `setSurvivalNoUpdateAccess(player, allowed)` | 授予/撤销该**生存**玩家的**不更新模式权限**：让他们也能用「不更新」快捷键/抑制。服务端在**装备**时传 `true`、**卸下**时传 `false`（只对正确栏位调用）；服务器会把开关**同步给该玩家的客户端**（客户端据此做本地预测），撤销时立刻同步失效。创造玩家无需调用，此接口**不影响创造** |
+
+KubeJS 例：
+```js
+const WYP = Java.loadClass('net.wieldyourpower.api.WieldYourPowerApi')
+
+// 1) 右键工具：不更新地破坏方块
+WYP.breakBlockNoUpdate(level, pos, player, true)
+
+// 2) curio 饰品：装备解锁「抑制更新」快捷键（服务端 equip/unequip，仅正确栏位）
+WYP.setSurvivalNoUpdateAccess(player, true)   // 装备时
+WYP.setSurvivalNoUpdateAccess(player, false)  // 卸下时
+```
+
+**饰品自动授予（需要 Curios，软依赖）**：给饰品物品打上 `noUpdateCurioTag`（默认 `wieldyourpower:no_update_curio`）标签后，戴着它的生存玩家**自动**获得抑制更新（服务端只在**装备/卸下/登录**时检测并同步客户端，**不每 tick 扫描**；卸下自动失效；创造不受影响）。配置：`noUpdateCurioEnabled` / `noUpdateCurioTag`。
+```js
+// KubeJS：把你的 curio 物品挂到标签上（curio 槽位本身用 curios 的标签声明）
+ServerEvents.tags('item', e => {
+  e.add('wieldyourpower:no_update_curio', 'kubejs:my_amulet')
+})
+```
 
 ### 其他
 - 所有过滤列表（友军 / 武德 / 作者庇护 / attribute）在 Cloth 界面里都有**快捷添加行**（下拉选列表与类型 + 填值 + 添加）。
@@ -66,17 +97,14 @@ Forge 1.20.1 模组。作者：wdlpiaoyi、deepseek。
 ```
 /wyp panel
 /wyp config
-/wyp kill [目标]
-/wyp killhonor [目标]
+/wyp kill [目标] [honor]
 /wyp freeze <目标> [刻数] [半径]
 /wyp favor add|remove [目标]
-/wyp jump <值> [玩家]
-/wyp step <值> [玩家]
-/wyp attribute <属性id> <上限> [玩家]
+/wyp access grant|revoke noupdate [玩家]
 /wyp status [玩家]
-/wyp reset [玩家]
-/wyp set walkSpeed|flyH|flyV|mineSpeed|mineInterval <值> [玩家]
 ```
+
+自身限制（行走/飞行速度、挖掘速度与间隔、跳跃、跨越、attribute 列表、重置）只在 `/wyp panel` 的 Cloth 界面里编辑，不提供指令；`honor` 是可选尾缀，走普通死亡流程。
 
 ## 作者庇护用法
 

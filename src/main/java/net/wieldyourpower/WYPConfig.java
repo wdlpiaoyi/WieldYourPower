@@ -44,6 +44,8 @@ public final class WYPConfig {
         public final ForgeConfigSpec.EnumValue<PlacementUpdateMode> noUpdatePlacementMode;
         public final ForgeConfigSpec.BooleanValue allyProtectsOwned;
         public final ForgeConfigSpec.BooleanValue allyBlocksSelfHarm;
+        public final ForgeConfigSpec.BooleanValue noUpdateCurioEnabled;
+        public final ForgeConfigSpec.ConfigValue<String> noUpdateCurioTag;
         public final ForgeConfigSpec.BooleanValue blockBreakerEnabled;
         public final ForgeConfigSpec.BooleanValue blockProtectionBypass;
         public final ForgeConfigSpec.BooleanValue killPiercesProtection;
@@ -108,7 +110,9 @@ public final class WYPConfig {
                     .define("creativePlacesThroughEntities", true);
 
             this.noUpdatePlacementMode = builder
-                    .comment("How the 'no update' keybind (default unbound) activates, creative only. While",
+                    .comment("How the 'no update' keybind (default unbound) activates. Usable in creative,",
+                            "or by a survival player the mode was granted to: the API's",
+                            "setSurvivalNoUpdateAccess, a tagged Curios item, or '/wyp access grant noupdate'. While",
                             "active, the player's own placement/breaking (block items and buckets) skips",
                             "neighbour notify and neighbour shape updates, so observers, pistons and redstone",
                             "do not react; the changed block still syncs to clients, other players unaffected.",
@@ -124,6 +128,18 @@ public final class WYPConfig {
                     .comment("Also block an owned entity from damaging itself. Off by default; self-harm",
                             "is odd and usually nothing should call it.")
                     .define("allyBlocksSelfHarm", false);
+
+            this.noUpdateCurioEnabled = builder
+                    .comment("Requires Curios. While a player wears an item tagged with noUpdateCurioTag in a",
+                            "curio slot, they get the 'no update' mode in survival too; the server syncs it to",
+                            "their client. Doesn't affect creative.")
+                    .define("noUpdateCurioEnabled", true);
+
+            this.noUpdateCurioTag = builder
+                    .comment("Item tag whose equipped curios grant the no-update mode. Tag your (KubeJS) curio",
+                            "item with this, e.g. via ServerEvents.tags('item', ...). Leave it pointing at an",
+                            "empty tag to disable. For manual control use the API's setSurvivalNoUpdateAccess.")
+                    .define("noUpdateCurioTag", "wieldyourpower:no_update_curio");
 
             this.blockBreakerEnabled = builder
                     .comment("Enable the admin Block Breaker item. Right-click a block to force-remove it,",

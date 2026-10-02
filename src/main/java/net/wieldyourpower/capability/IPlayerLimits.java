@@ -54,6 +54,14 @@ public interface IPlayerLimits {
 
     void setAllyProtection(List<String> entries);
 
+    /**
+     * Whether an operator granted this player the "no update" mode with {@code /wyp access grant noupdate}.
+     * Persisted with the player's data and independent of the API grant and the Curios auto-detection.
+     */
+    boolean isNoUpdateGranted();
+
+    void setNoUpdateGranted(boolean granted);
+
     void copyFrom(IPlayerLimits other);
 
     void saveNBT(CompoundTag tag);

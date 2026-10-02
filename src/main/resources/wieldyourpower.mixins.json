@@ -13,8 +13,10 @@
     "EntityRemoveMixin",
     "EntitySetPosMixin",
     "EntitySetRemovedMixin",
+    "GameEventDispatcherMixin",
     "LevelGetEntitiesMixin",
     "LevelGetEntitiesTypeTestMixin",
+    "LevelNotifyMixin",
     "LevelSetBlockMixin",
     "LivingEntityActuallyHurtMixin",
     "LivingEntityDropLootMixin",
@@ -22,6 +24,7 @@
     "LivingEntityIsDeadOrDyingMixin",
     "LivingEntitySetHealthMixin",
     "PlayerListRespawnMixin",
+    "ServerLevelNotifyMixin",
     "ServerPlayerDieMixin",
     "ServerPlayerGameModeMixin",
     "SolidBucketItemMixin"

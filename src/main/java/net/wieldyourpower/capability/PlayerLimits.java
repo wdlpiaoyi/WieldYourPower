@@ -26,6 +26,7 @@ public class PlayerLimits implements IPlayerLimits {
     private double stepLimit = DEFAULT_STEP;
     private List<String> attributeLimits = new ArrayList<>();
     private List<String> allyProtection = new ArrayList<>(List.of("type,touhou_little_maid:maid"));
+    private boolean noUpdateGranted;
 
     @Override
     public double getWalkSpeedLimit() {
@@ -123,6 +124,16 @@ public class PlayerLimits implements IPlayerLimits {
     }
 
     @Override
+    public boolean isNoUpdateGranted() {
+        return this.noUpdateGranted;
+    }
+
+    @Override
+    public void setNoUpdateGranted(boolean granted) {
+        this.noUpdateGranted = granted;
+    }
+
+    @Override
     public void copyFrom(IPlayerLimits other) {
         if (other == null) {
             return;
@@ -136,6 +147,7 @@ public class PlayerLimits implements IPlayerLimits {
         this.stepLimit = other.getStepLimit();
         this.attributeLimits = new ArrayList<>(other.getAttributeLimits());
         this.allyProtection = new ArrayList<>(other.getAllyProtection());
+        this.noUpdateGranted = other.isNoUpdateGranted();
     }
 
     @Override
@@ -157,6 +169,7 @@ public class PlayerLimits implements IPlayerLimits {
             allies.add(StringTag.valueOf(entry));
         }
         tag.put("AllyProtection", allies);
+        tag.putBoolean("NoUpdateGranted", this.noUpdateGranted);
     }
 
     @Override
@@ -199,5 +212,6 @@ public class PlayerLimits implements IPlayerLimits {
             // Rewrite legacy key:value entries to the new key,value form.
             this.allyProtection = net.wieldyourpower.util.FilterSyntax.normalizeAll(allies);
         }
+        this.noUpdateGranted = tag.contains("NoUpdateGranted") && tag.getBoolean("NoUpdateGranted");
     }
 }
